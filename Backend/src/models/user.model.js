@@ -1,7 +1,12 @@
-import express, { Schema } from "express";
+import mongoose, { Schema } from "mongoose";
 
 const UserSchema = new Schema(
   {
+    clerkId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: true,
@@ -11,22 +16,12 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
-    refreshToken: {
+    avatar:{
       type: String,
-    },
-    google: {
-      accessToken: {
-        type: String,
-        required: true,
-      },
-      refreshToken: {
-        type: String,
-        required: true,
-      },
-    },
+    }
   },
   { timestamps: true }
 );
 
-const User = express.model("User" , UserSchema)
+const User = mongoose.model("User" , UserSchema)
 export default User;

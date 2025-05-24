@@ -1,4 +1,4 @@
-import express, { Schema } from 'express';
+import mongoose, { Schema } from 'mongoose';
 
 const evetnSchema = new Schema({
     title:{
@@ -34,21 +34,13 @@ const evetnSchema = new Schema({
         required:true,
     },
     location:{
-        type:{
-            type:String,
-            enum:['Point'],
-            required:true
-        },
-        coordinates:{
-            type:[Number],
-            required:true
-        },
-        address:{
-            type:String,
-            required:true
-        }
+        type:String,
+        required:true
+    },
+    createdBy:{
+        type: String, default: 'system'
     },
 } , {timestamps: true})
 
-const Event = express.model('Event', evetnSchema)
+const Event = mongoose.model('Event', evetnSchema)
 export default Event;

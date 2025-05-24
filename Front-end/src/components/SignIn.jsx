@@ -32,12 +32,13 @@ const SignIn = () => {
                   className="w-96 rounded-sm border-[.02px] border-[#808793]"
                 />
                 <Button className="w-96 mt-4 bg-[#6d28d9] text-white rounded-sm hover:bg-[#4c1d95]">
-                  Sign In with Email
+                  Sign Ip with Email
                 </Button>
                 <span className="my-4 text-muted-foreground text-sm">
                   OR CONTINUE WITH
                 </span>
-                <Button className="w-96 bg-transparent text-white rounded-sm hover:bg-[#1f2937] border-[.02px] border-[#7e8aa181]">
+                <Button className="w-96 bg-transparent text-white rounded-sm hover:bg-[#1f2937] border-[.02px] border-[#7e8aa181]"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     height="24"

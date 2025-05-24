@@ -1,20 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import SignIn from './components/SignIn.jsx'
-import HeroSection from './components/HeroSection.jsx'
-import Login from './components/Login'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.jsx";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import SignIn from "./components/SignIn";
+import HeroSection from "./components/HeroSection";
+import Login from "./components/Login";
+import { ClerkProvider } from "@clerk/clerk-react";
 
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 const router = createBrowserRouter([
-   {
+  {
     path: "/",
     element: <App />,
     children: [
       {
-        path: "/signin",
+        path: "/signIn",
         element: <SignIn />,
       },
       {
@@ -24,12 +26,14 @@ const router = createBrowserRouter([
       {
         path: "/hero",
         element: <HeroSection />,
-      }
-  ]
-  }
-])
-createRoot(document.getElementById('root')).render(
+      },
+    ],
+  },
+]);
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
-)
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <RouterProvider router={router} />
+    </ClerkProvider>
+  </StrictMode>
+);
