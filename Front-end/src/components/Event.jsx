@@ -12,15 +12,18 @@ import {
   X,
 } from "lucide-react";
 import { getAllEvents, paymentApi } from "../api/api";
-
+import { useAuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 const Event = () => {
+   const {user } = useAuthContext();
   const [eventData, setEventData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [tacketsQuntity, setTacketsQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  //   const navigate = useNavigate();
+  
+    const navigate = useNavigate();
 
   const openPopup = (eventId) => {
     console.log("Event ID:", eventId);
@@ -49,7 +52,7 @@ const Event = () => {
   };
 
   const handlePayment = async (eventId, numberOfTickets) => {
-    console.log("come in payment");
+    if(!user) navigate('/signin');
     try {
       const response = await paymentApi(eventId, numberOfTickets);
       window.location.href = response.data.data.customer;
@@ -79,7 +82,6 @@ const Event = () => {
     : null;
 
   const totalPrice = selectedEvent ? selectedEvent.price * tacketsQuntity : 0;
-  // const date = selectedEvent ? new Date(`${selectedEvent.date}`).toLocaleString() : selectedEvent.date;
     return (
     <>
       <div className="w-full py-2 px-4 min-h-screen">

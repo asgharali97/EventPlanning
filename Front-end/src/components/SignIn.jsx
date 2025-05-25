@@ -1,8 +1,36 @@
 import React from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-
+import { useGoogleLogin } from "@react-oauth/google";
+import { googleAuth } from "../api/api";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
 const SignIn = () => {
+  const navigate = useNavigate();
+  const {setUser} = useAuthContext();
+   const handleSuccess = async (tokenResponse) => {
+    console.log("req come");
+    try {
+      console.log("Google login success:", tokenResponse);
+      const { data } = await googleAuth(tokenResponse.code);
+      if(data.data.user){
+          setUser(data.data.user)
+         navigate('/')
+      }
+    } catch (error) {
+      console.error("got error while logging with google", error);
+    }
+  };
+
+  const handleError = (err) => {
+    console.error("Google login error:", err);
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleSuccess,
+    onError: handleError,
+    flow: "auth-code",
+  });
   return (
     <>
       <div className="w-full h-screen bg-[#030712]">
@@ -19,25 +47,14 @@ const SignIn = () => {
           </div>
           <div className="w-1/2 h-screen flex justify-center items-center">
             <div className="w-full h-full flex justify-center items-center flex-col">
-              <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-                Create an account
+              <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-center my-4">
+                Sign In with Google
               </h4>
-              <h6 className="my-2 text-center text-[#808793] text-md">
-                Enter your email below to create your account
-              </h6>
-              <form className="flex flex-col justify-center items-center my-4">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-96 rounded-sm border-[.02px] border-[#808793]"
-                />
-                <Button className="w-96 mt-4 bg-[#6d28d9] text-white rounded-sm hover:bg-[#4c1d95]">
-                  Sign Ip with Email
-                </Button>
-                <span className="my-4 text-muted-foreground text-sm">
-                  OR CONTINUE WITH
-                </span>
-                <Button className="w-96 bg-transparent text-white rounded-sm hover:bg-[#1f2937] border-[.02px] border-[#7e8aa181]"
+              <div className="flex flex-col justify-center my-4">
+              
+                <Button
+                  className="w-36 bg-transparent text-white rounded-sm hover:bg-[#1f2937] border-[.02px] border-[#7e8aa181] cursor-pointer my-6"
+                  onClick={() => googleLogin()}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -65,15 +82,6 @@ const SignIn = () => {
                   </svg>
                   <span className="mx-3">Google</span>
                 </Button>
-              </form>
-              <div className="w-full relative my-4 text-[#808793] text-md">
-                <div className="w-full absolute flex justify-center top-12 ">
-                already have an account?{" "}
-                <a
-                  href="/login"
-                  className="text-[#6d28d9] hover:text-[#4c1d95] font-bold mx-2"
-                  >Login</a>
-                  </div>
               </div>
             </div>
           </div>

@@ -1,6 +1,11 @@
 import mongoose,{Schema} from 'mongoose';
 
 const eventBookingSchema = new Schema({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     eventId: {
         type: Schema.Types.ObjectId,
         ref: 'Event',

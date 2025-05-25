@@ -2,31 +2,56 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://localhost:4000",
+  withCredentials: true,
 });
 
-// const checkAuth = async (token) => {
-//   return  await api.post("/auth/sync", {},
-//    {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       }
-//    })
-// }
+const googleAuth = async (code) => {
+  return api.post("/auth/sign-in", { code });
+};
 
-
+const getUser = async () => {
+  return await api.get("/auth/user", { withCredentials: true });
+};
+const logout = async () => {
+  return await api.post("/auth/logout", { withCredentials: true });
+};
 
 const paymentApi = async (eventId, numberOfTickets) => {
-   return await api.post("event-booking", {eventId, numberOfTickets},{withCredentials: true});
-}
-
-
+  return await api.post(
+    "event-booking",
+    { eventId, numberOfTickets },
+    { withCredentials: true }
+  );
+};
 
 const succesPay = async (session_id) => {
-   return await api.get(`event-booking/success/${session_id}`,{withCredentials: true});
-}
+  return await api.get(`event-booking/success/${session_id}`, {
+    withCredentials: true,
+  });
+};
+
+const getBookedEvents = async () => {
+  return await api.get("event-booking/get-booked-events", {
+    withCredentials: true,
+  });
+};
 
 const getAllEvents = async () => {
-   return await api.get('/events')
+  return await api.get("/events");
+};
+
+const getEventById = async (eventId) =>{
+   return await api.get(`/events/${eventId}`);
 }
 
-export { api, getAllEvents, paymentApi,succesPay};
+export {
+  api,
+  googleAuth,
+  getAllEvents,
+  paymentApi,
+  succesPay,
+  getUser,
+  logout,
+  getBookedEvents,
+  getEventById,
+};

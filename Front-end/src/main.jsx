@@ -5,12 +5,12 @@ import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SignIn from "./components/SignIn";
 import HeroSection from "./components/HeroSection";
-import Login from "./components/Login";
 import Event from "./components/Event";
 import BookedEvents from "./components/BookedEvents";
-import BookEvent from "./components/BookEvent";
-import CreateEvent from "./components/CreateEvent";
+import AllBookedEvents from "./components/AllBookedEvents";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const router = createBrowserRouter([
   {
@@ -18,12 +18,12 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "/signIn",
-        element: <SignIn />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
+        path: "/signin",
+        element: (
+          <GoogleOAuthProvider clientId={clientId}>
+            <SignIn />
+          </GoogleOAuthProvider>
+        ),
       },
       {
         path: "/",
@@ -31,25 +31,25 @@ const router = createBrowserRouter([
       },
       {
         path: "/events",
-        element: <Event/>
+        element: <Event />,
       },
       {
-        path:"booked-events/:session_id",
-        element: <BookedEvents/>
+        path: "booked-events/:session_id",
+        element: <BookedEvents />,
       },
       {
-        path:"create-event",
-        element: <CreateEvent/>
+        path:"Allbooked-events",
+        element:<AllBookedEvents/>
       },
       {
-        path: "book-event",
-        element: <BookEvent />,
+        path: "*",
+        element: <HeroSection/>
       }
     ],
   },
 ]);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-      <RouterProvider router={router} />
+    <RouterProvider router={router} />
   </StrictMode>
 );
