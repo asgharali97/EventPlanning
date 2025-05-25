@@ -14,8 +14,8 @@ const bookEvent = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Event ID is required")
     }
 
-    if (!numberOfTickets) {
-      throw new ApiError(400, "Number of tickets required")
+    if (!(numberOfTickets || numberOfTickets > 0)) {
+      throw new ApiError(400, "Number of tickets required and must be greater than 0")
     }
 
     const bookingDate = new Date().toISOString().split('T')[0];
@@ -26,11 +26,15 @@ const bookEvent = asyncHandler(async (req, res) => {
     if (!event) {
         throw new ApiError(404, "Event not found")
     }
+
+    if(event.seats.length === 0){
+        throw new ApiError(404, "No seats available")
+    }
     
     console.log(event)
-
+    
     const totalPrice = event.price * numberOfTickets
-
+    const remaningSeats = event.seats - numberOfTickets
     const customer = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -57,6 +61,9 @@ const bookEvent = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Payment session creation failed")
     }
     console.log("customer", customer)
+
+    const updateEvent = await Event.findOneAndUpdate({ _id: eventId }, { seats: remaningSeats }, { new: true });
+
     const booking = await EventBooking.create({
         eventId,
         numberOfTickets,

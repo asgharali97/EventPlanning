@@ -11,7 +11,6 @@ import {
   Plus,
   X,
 } from "lucide-react";
-// import { useNavigate } from "react-router-dom";
 import { getAllEvents, paymentApi } from "../api/api";
 
 const Event = () => {
@@ -20,6 +19,7 @@ const Event = () => {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [tacketsQuntity, setTacketsQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
   //   const navigate = useNavigate();
 
   const openPopup = (eventId) => {
@@ -63,8 +63,6 @@ const Event = () => {
       try {
         const { data } = await getAllEvents();
         setEventData(data.data);
-        console.log(data);
-        console.log("eventData", eventData);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -73,7 +71,7 @@ const Event = () => {
   }, []);
 
   useEffect(() => {
-    console.log("eventData updated:", eventData);
+    
   }, [eventData]);
 
   const selectedEvent = selectedEventId
@@ -81,11 +79,14 @@ const Event = () => {
     : null;
 
   const totalPrice = selectedEvent ? selectedEvent.price * tacketsQuntity : 0;
-  return (
+  // const date = selectedEvent ? new Date(`${selectedEvent.date}`).toLocaleString() : selectedEvent.date;
+    return (
     <>
       <div className="w-full py-2 px-4 min-h-screen">
-        <div className="flex flex-wrap justify-center gap-4 w-full h-full py-12 px-8">
+        <div className="grid grid-cols-3 gap-8 w-full h-full py-12 px-8">
           {eventData?.map((event, index) => {
+            const allSeatsBooked = event.seats === 0;
+            const date = new Date(`${event.date}`).toDateString();
             return (
               <div
                 className="w-[25rem] bg-gray-900 border border-gray-800 rounded-sm shadow-lg overflow-hidden hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 my-4"
@@ -101,7 +102,15 @@ const Event = () => {
                     <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       {event.category}
                     </span>
-                  </div>
+                  </div>{
+                    allSeatsBooked && (
+                      <div className="absolute top-3 right-3">
+                        <span className="bg-violet-800 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Seats Booked
+                        </span>
+                      </div>
+                    )
+                  }
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
@@ -113,7 +122,7 @@ const Event = () => {
                   <div className="flex items-center gap-4 mb-3">
                     <div className="flex items-center gap-2 text-gray-300">
                       <Calendar className="w-4 h-4 text-violet-400" />
-                      <span className="text-sm font-medium">{event.date}</span>
+                      <span className="text-sm font-medium">{date}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-300">
                       <Clock className="w-4 h-4 text-violet-400" />
@@ -136,13 +145,14 @@ const Event = () => {
                     <div className="flex items-center gap-2 text-gray-400">
                       <Users className="w-4 h-4" />
                       <span className="text-sm font-medium">
-                        {event.seats} seats left
+                       {allSeatsBooked ? "All Seats Booked" : `${event.seats} seats left`}
                       </span>
                     </div>
                   </div>
                   <button
-                    className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 cursor-pointer"
+                    className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 cursor-pointer disabled:bg-violet-400 disabled:text-[#dedede] disabled:cursor-not-allowed"
                     onClick={() => openPopup(event._id)}
+                    disabled={allSeatsBooked}
                   >
                     Book Now
                   </button>
