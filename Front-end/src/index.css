@@ -188,3 +188,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+ .popup::-webkit-scrollbar {
+    width: 0.6rem;
+  }
+
+  .popup::-webkit-scrollbar-track {
+    border-radius: 5rem;
+    background: #121212;
+  }
+
+  .popup::-webkit-scrollbar-thumb {
+    background: #35383d;
+    border-radius: 5rem;
+  }
+
+  .popup::-webkit-scrollbar-thumb:hover {
+    background: #35383dc6;
+  }

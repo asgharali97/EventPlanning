@@ -6,6 +6,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SignIn from "./components/SignIn";
 import HeroSection from "./components/HeroSection";
 import Login from "./components/Login";
+import Event from "./components/Event";
+import BookedEvents from "./components/BookedEvents";
+import BookEvent from "./components/BookEvent";
+import CreateEvent from "./components/CreateEvent";
 import { ClerkProvider } from "@clerk/clerk-react";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -24,9 +28,25 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "/hero",
+        path: "/",
         element: <HeroSection />,
       },
+      {
+        path: "/events",
+        element: <Event/>
+      },
+      {
+        path:"booked-events/:session_id",
+        element: <BookedEvents/>
+      },
+      {
+        path:"create-event",
+        element: <CreateEvent/>
+      },
+      {
+        path: "book-event",
+        element: <BookEvent />,
+      }
     ],
   },
 ]);

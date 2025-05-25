@@ -13,4 +13,18 @@ const checkAuth = async () => {
 //   return api.get('/')
 // }
 
-export { api, checkAuth };
+const paymentApi = async (eventId, numberOfTickets) => {
+   return await api.post("event-booking", {eventId, numberOfTickets},{withCredentials: true});
+}
+
+
+
+const succesPay = async (session_id) => {
+   return await api.get(`event-booking/success/${session_id}`,{withCredentials: true});
+}
+
+const getAllEvents = async () => {
+   return await api.get('/events')
+}
+
+export { api, checkAuth , getAllEvents, paymentApi,succesPay};

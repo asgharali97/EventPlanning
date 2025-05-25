@@ -1,14 +1,9 @@
-import express,{Schema} from 'express';
+import mongoose,{Schema} from 'mongoose';
 
 const eventBookingSchema = new Schema({
     eventId: {
         type: Schema.Types.ObjectId,
         ref: 'Event',
-        required: true
-    },
-    userId:{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
         required: true
     },
     bookingDate: {
@@ -35,6 +30,6 @@ const eventBookingSchema = new Schema({
     }
 }, {timestamps: true});
 
-const EventBooking = express.model('EventBooking', eventBookingSchema);
+const EventBooking = mongoose.model('EventBooking', eventBookingSchema);
 
 export default EventBooking
