@@ -1,10 +1,15 @@
 import react,{createContext,useContext,useState,useEffect} from "react";
 import {getUser} from "../api/api";
 
-const AuthContext = createContext();
-
-export const AuthContextProvider = ({children}) => {
-    const [user,setUser] = useState(null);
+interface User {
+    id: string,
+    name: string,
+    email: string,
+    avatar: string,
+}
+const AuthContext = createContext<{user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>} | null>(null);
+export const AuthContextProvider = ({children}: {children: React.ReactNode}) => {
+    const [user,setUser] = useState<User | null>(null);
     
     useEffect(() => {
     getUser()

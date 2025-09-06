@@ -9,7 +9,7 @@ const Navbar = () => {
 
 
     useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event : MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }

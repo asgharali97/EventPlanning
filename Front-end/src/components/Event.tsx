@@ -15,17 +15,16 @@ import { getAllEvents, paymentApi } from "../api/api";
 import { useAuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 const Event = () => {
-   const {user } = useAuthContext();
+  const { user } = useAuthContext();
   const [eventData, setEventData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState();
   const [tacketsQuntity, setTacketsQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const openPopup = (eventId) => {
+  const openPopup = (eventId: Number) => {
     console.log("Event ID:", eventId);
     setSelectedEventId(eventId);
     setIsPopupOpen(true);
@@ -52,7 +51,7 @@ const Event = () => {
   };
 
   const handlePayment = async (eventId, numberOfTickets) => {
-    if(!user) navigate('/signin');
+    if (!user) navigate("/signin");
     try {
       const response = await paymentApi(eventId, numberOfTickets);
       window.location.href = response.data.data.customer;
@@ -73,16 +72,14 @@ const Event = () => {
     fetchEvents();
   }, []);
 
-  useEffect(() => {
-    
-  }, [eventData]);
+  useEffect(() => {}, [eventData]);
 
   const selectedEvent = selectedEventId
     ? eventData.find((event) => event._id === selectedEventId)
     : null;
 
   const totalPrice = selectedEvent ? selectedEvent.price * tacketsQuntity : 0;
-    return (
+  return (
     <>
       <div className="w-full py-2 px-4 min-h-screen">
         <div className="grid grid-cols-3 gap-8 w-full h-full py-12 px-8">
@@ -104,15 +101,14 @@ const Event = () => {
                     <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       {event.category}
                     </span>
-                  </div>{
-                    allSeatsBooked && (
-                      <div className="absolute top-3 right-3">
-                        <span className="bg-violet-800 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Seats Booked
-                        </span>
-                      </div>
-                    )
-                  }
+                  </div>
+                  {allSeatsBooked && (
+                    <div className="absolute top-3 right-3">
+                      <span className="bg-violet-800 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        Seats Booked
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
@@ -147,7 +143,9 @@ const Event = () => {
                     <div className="flex items-center gap-2 text-gray-400">
                       <Users className="w-4 h-4" />
                       <span className="text-sm font-medium">
-                       {allSeatsBooked ? "All Seats Booked" : `${event.seats} seats left`}
+                        {allSeatsBooked
+                          ? "All Seats Booked"
+                          : `${event.seats} seats left`}
                       </span>
                     </div>
                   </div>

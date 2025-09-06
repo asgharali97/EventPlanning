@@ -1,28 +1,27 @@
-import React from "react";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useGoogleLogin } from "@react-oauth/google";
 import { googleAuth } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+
 const SignIn = () => {
   const navigate = useNavigate();
-  const {setUser} = useAuthContext();
-   const handleSuccess = async (tokenResponse) => {
+  const { setUser } = useAuthContext();
+  const handleSuccess = async (tokenResponse) => {
     console.log("req come");
     try {
       console.log("Google login success:", tokenResponse);
       const { data } = await googleAuth(tokenResponse.code);
-      if(data.data.user){
-          setUser(data.data.user)
-         navigate('/')
+      if (data.data.user) {
+        setUser(data.data.user);
+        navigate("/");
       }
     } catch (error) {
       console.error("got error while logging with google", error);
     }
   };
 
-  const handleError = (err) => {
+  const handleError = (err : any) => {
     console.error("Google login error:", err);
   };
 
@@ -51,7 +50,6 @@ const SignIn = () => {
                 Sign In with Google
               </h4>
               <div className="flex flex-col justify-center my-4">
-              
                 <Button
                   className="w-36 bg-transparent text-white rounded-sm hover:bg-[#1f2937] border-[.02px] border-[#7e8aa181] cursor-pointer my-6"
                   onClick={() => googleLogin()}
