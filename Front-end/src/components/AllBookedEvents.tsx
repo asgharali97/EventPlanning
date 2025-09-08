@@ -1,10 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getBookedEvents, getEventById } from "../api/api";
 import { CheckCircle, Calendar, Clock, MapPin, Users } from "lucide-react";
 
+interface BookedEvent {
+  bookingDate: string;
+  eventId: string;
+  numberOfTickets: Number;
+  paymentStatus: string;
+  status: string;
+  totalPrice: Number;
+  userId: string;
+}
+
+interface EventData extends BookedEvent {
+  category: string,
+  coverImage: string,
+  description: string,
+  location: string,
+  price: Number,
+  seats: Number,
+  time: string,
+  title: string,
+}
+
 const AllBookedEvents = () => {
-  const [eventData, setEventData] = useState([]);
-  const [fullEventData, setFullEventData] = useState([]);
+  const [eventData, setEventData] = useState<BookedEvent[]>([]);
+  const [fullEventData, setFullEventData] = useState<EventData[]>([]);
 
   useEffect(() => {
     getBookedEvents()
@@ -23,14 +44,15 @@ const AllBookedEvents = () => {
         eventData.map(async (booking) => {
           try {
             const res = await getEventById(booking.eventId);
-            return { ...booking, event: res.data.data }; 
+            return { ...booking, event: res.data.data };
           } catch (err) {
-            console.log(err)
+            console.log(err);
             return { ...booking, event: null };
           }
         })
       );
       setFullEventData(results);
+      console.log(results);
     };
 
     if (eventData.length > 0) {
@@ -98,7 +120,7 @@ const AllBookedEvents = () => {
                     <div className="flex items-center text-gray-300 text-sm">
                       <Users className="w-4 h-4 mr-2 text-violet-400" />
                       <span>
-                        {item.numberOfTickets}{" "}
+                        {item.numberOfTickets.toLocaleString()}{" "}
                         {item.numberOfTickets === 1 ? "Ticket" : "Tickets"}
                       </span>
                     </div>
@@ -108,7 +130,7 @@ const AllBookedEvents = () => {
                     <div className="text-right">
                       <p className="text-gray-400 text-sm">Total Price</p>
                       <p className="text-2xl font-bold text-white">
-                        ${item.totalPrice}
+                        ${item.totalPrice.toLocaleString()}
                       </p>
                     </div>
                   </div>

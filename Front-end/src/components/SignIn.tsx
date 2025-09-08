@@ -4,11 +4,19 @@ import { googleAuth } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 
+interface tokenResponse {
+  authuser: string;
+  code: string;
+  prompt: string;
+  scope: string;
+}
+
 const SignIn = () => {
   const navigate = useNavigate();
   const { setUser } = useAuthContext();
-  const handleSuccess = async (tokenResponse) => {
+  const handleSuccess = async (tokenResponse : tokenResponse) => {
     console.log("req come");
+    console.log(tokenResponse);
     try {
       console.log("Google login success:", tokenResponse);
       const { data } = await googleAuth(tokenResponse.code);
@@ -21,7 +29,7 @@ const SignIn = () => {
     }
   };
 
-  const handleError = (err : any) => {
+  const handleError = (err: any) => {
     console.error("Google login error:", err);
   };
 

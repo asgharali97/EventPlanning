@@ -1,18 +1,32 @@
+import { Request, Response } from "express";
 import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Event from "../models/event.model.js";
 import Stripe from "stripe";
 import EventBooking from "../models/eventBooking.model.js";
+import { IUser } from "models/user.model.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+interface AuthRequest extends Request {
+  user?: IUser;
+}
 
-const bookEvent = asyncHandler(async (req, res) => {
-  let paymentStatus = "pending";
+const getStripeInstance = () => {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    throw new ApiError(500, "Stripe secret key not found");
+  }
+  return new Stripe(stripeKey);
+};
+
+const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const stripe = getStripeInstance();
+  let paymentStatus: string = "pending";
   const { numberOfTickets, eventId } = req.body;
+
   const userId = req.user._id;
 
-  if(!userId) {
+  if (!userId) {
     throw new ApiError(400, "User ID is required");
   }
 
@@ -20,14 +34,14 @@ const bookEvent = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Event ID is required");
   }
 
-  if (!(numberOfTickets || numberOfTickets > 0)) {
+  if (!(numberOfTickets > 0)) {
     throw new ApiError(
       400,
       "Number of tickets required and must be greater than 0"
     );
   }
 
-  const bookingDate = new Date().toISOString().split("T")[0];
+  const bookingDate: string = new Date().toISOString().split("T")[0];
   console.log("bookingDate", bookingDate);
 
   const event = await Event.findById(eventId);
@@ -36,13 +50,12 @@ const bookEvent = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  if (event.seats.length === 0) {
+  if (event.seats === 0) {
     throw new ApiError(404, "No seats available");
   }
 
-
-  const totalPrice = event.price * numberOfTickets;
-  const remaningSeats = event.seats - numberOfTickets;
+  const totalPrice: number = event.price * numberOfTickets;
+  const remaningSeats: number = event.seats - numberOfTickets;
   const customer = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
@@ -89,17 +102,16 @@ const bookEvent = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Booking failed");
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, "Event booked successfully", {
-        customer: customer.url,
-        booking,
-      })
-    );
+  return res.status(200).json(
+    new ApiResponse(200, "Event booked successfully", {
+      customer: customer.url,
+      booking,
+    })
+  );
 });
 
-const successPay = asyncHandler(async (req, res) => {
+const successPay = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const stripe = getStripeInstance();
   const { session_id } = req.params;
   const session = await stripe.checkout.sessions.retrieve(session_id);
 
@@ -113,6 +125,7 @@ const successPay = asyncHandler(async (req, res) => {
       { paymentStatus: "paid" },
       { new: true }
     );
+    console.log("Booking", booking);
     return res
       .status(200)
       .json(new ApiResponse(200, "Payment successful", { booking }));
@@ -120,12 +133,14 @@ const successPay = asyncHandler(async (req, res) => {
 });
 
 const getBookedEvents = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const events = await EventBooking.find({userId});
+  const userId = req.user?._id;
+  const events = await EventBooking.find({ userId });
   if (!events) {
     throw new ApiError(404, "No events found");
   }
-  res.status(200).json(new ApiResponse(200, "Events fetched successfully", events));
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Events fetched successfully", events));
 });
 
 export { bookEvent, successPay, getBookedEvents };
