@@ -14,18 +14,32 @@ import {
 import { getAllEvents, paymentApi } from "../api/api";
 import { useAuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+
+interface EventData {
+  category: string;
+  coverImage: string;
+  description: string;
+  location: string;
+  price: Number;
+  seats: Number;
+  time: string;
+  title: string;
+  date:string;
+  seatsAvailable:number;
+  _id: string;
+}
+
 const Event = () => {
   const { user } = useAuthContext();
-  const [eventData, setEventData] = useState([]);
+  const [eventData, setEventData] = useState<EventData[]>([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState();
+  const [selectedEventId, setSelectedEventId] = useState("");
   const [tacketsQuntity, setTacketsQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const openPopup = (eventId: Number) => {
-    console.log("Event ID:", eventId);
+  const openPopup = (eventId: string) => {
     setSelectedEventId(eventId);
     setIsPopupOpen(true);
     console.log(isPopupOpen);
@@ -33,7 +47,7 @@ const Event = () => {
   };
 
   const closePopup = () => {
-    setSelectedEventId(null);
+    setSelectedEventId("");
     setIsPopupOpen(false);
     setTacketsQuantity(1);
   };
@@ -50,7 +64,7 @@ const Event = () => {
     }
   };
 
-  const handlePayment = async (eventId, numberOfTickets) => {
+  const handlePayment = async (eventId: string, numberOfTickets: number) => {
     if (!user) navigate("/signin");
     try {
       const response = await paymentApi(eventId, numberOfTickets);
@@ -74,9 +88,7 @@ const Event = () => {
 
   useEffect(() => {}, [eventData]);
 
-  const selectedEvent = selectedEventId
-    ? eventData.find((event) => event._id === selectedEventId)
-    : null;
+  const selectedEvent = selectedEventId && eventData.find((event) => event._id === selectedEventId);
 
   const totalPrice = selectedEvent ? selectedEvent.price * tacketsQuntity : 0;
   return (
@@ -137,7 +149,7 @@ const Event = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold text-green-400">
-                        ${event.price}
+                        ${event.price.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">

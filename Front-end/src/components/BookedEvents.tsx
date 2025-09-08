@@ -3,27 +3,51 @@ import { succesPay, getEventById } from "../api/api";
 import { useLocation } from "react-router-dom";
 import { CheckCircle, Calendar, Clock, MapPin, Users } from "lucide-react";
 
+interface BookedEvent {
+  _id: string;
+  bookingDate: string;
+  eventId: string;
+  numberOfTickets: Number;
+  paymentStatus: string;
+  status: string;
+  totalPrice: Number;
+  userId: string;
+  category: string,
+  coverImage: string,
+  description: string,
+  location: string,
+  price: Number,
+  seats: Number,
+  time: string,
+  title: string,
+}
+
 const BookedEvents = () => {
   
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const session_id = params.get("session_id");
-  console.log(session_id);
-  const [eventData, setEventData] = useState([]);
+  const [eventData, setEventData] = useState<BookedEvent[]>([]);
   const [paymentData, setPaymentData] = useState([]);
   const [showSuccessIcon, setShowSuccessIcon] = useState(true);
   const [iconAnimation, setIconAnimation] = useState(false);
 
   useEffect(() => {
     function getBookedEvent() {
-      succesPay(session_id)
+      if(session_id){
+        succesPay(session_id)
         .then((res) => {
+          console.log(res)
           setPaymentData(res.data.data.booking || []);
         })
         .catch((err) => {
           console.log("error", err);
         });
-    }
+        console.log(paymentData)
+      }else{
+         throw new Error("Payment failed. due to invalid session id.");
+      }
+      }
     const timer = setTimeout(() => {
       setIconAnimation(true);
     }, 100);
@@ -41,7 +65,6 @@ const BookedEvents = () => {
 
   useEffect(() => {
     if (paymentData.eventId) {
-      console.log(paymentData.eventId);
       getEventById(paymentData.eventId)
         .then((res) => {
           setEventData(res.data.data || {});

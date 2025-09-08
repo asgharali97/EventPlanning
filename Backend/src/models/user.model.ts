@@ -1,4 +1,11 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  InferSchemaType,
+  HydratedDocument,
+  Document,
+  Types,
+} from "mongoose";
 import jwt from "jsonwebtoken";
 
 const UserSchema = new Schema(
@@ -13,6 +20,9 @@ const UserSchema = new Schema(
       unique: true,
     },
     avatar: {
+      type: String,
+    },
+    refreshToken: {
       type: String,
     },
     google: {
@@ -50,6 +60,20 @@ UserSchema.methods.gernateRefreshToken = function () {
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
   );
 };
-
+export type UserDoc = HydratedDocument<InferSchemaType<typeof UserSchema>>;
 const User = mongoose.model("User", UserSchema);
 export default User;
+
+export interface IUser extends Document {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  avatar?: string;
+  google?: {
+    accessToken: string;
+    refreshToken: string;
+    tokenExpiryDate: Date;
+  };
+  gernateAccessToken(): string;
+  gernateRefreshToken(): string;
+}
