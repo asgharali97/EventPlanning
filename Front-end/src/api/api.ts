@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const googleAuth = async (code:string) => {
+const googleAuth = async (code: string) => {
   return api.post("/auth/sign-in", { code });
 };
 
@@ -16,7 +16,7 @@ const logout = async () => {
   return await api.post("/auth/logout", { withCredentials: true });
 };
 
-const paymentApi = async (eventId:string, numberOfTickets:number) => {
+const paymentApi = async (eventId: string, numberOfTickets: number) => {
   return await api.post(
     "event-booking",
     { eventId, numberOfTickets },
@@ -24,7 +24,7 @@ const paymentApi = async (eventId:string, numberOfTickets:number) => {
   );
 };
 
-const succesPay = async (session_id:string) => {
+const succesPay = async (session_id: string) => {
   return await api.get(`event-booking/success/${session_id}`, {
     withCredentials: true,
   });
@@ -40,8 +40,20 @@ const getAllEvents = async () => {
   return await api.get("/events");
 };
 
-const getEventById = async (eventId:string) =>{
-   return await api.get(`/events/${eventId}`);
+const getEventById = async (eventId: string) => {
+  return await api.get(`/events/${eventId}`);
+};
+
+const becomeHost = async () => {
+  return await api.get("/auth/become/host", { withCredentials: true });
+};
+
+const verifyHostPayment = async ({ paymentIntentId }: { paymentIntentId: string }) => {
+  return await api.post(
+    "/auth/verify/host",
+    { paymentIntentId },
+    { withCredentials: true }
+  );
 }
 
 export {
@@ -54,4 +66,6 @@ export {
   logout,
   getBookedEvents,
   getEventById,
+  becomeHost,
+  verifyHostPayment,
 };

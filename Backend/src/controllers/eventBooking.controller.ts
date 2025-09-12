@@ -77,7 +77,7 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
     success_url: `http://localhost:5173/booked-events/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `http://localhost:5173/events/`,
   });
-
+ 
   if (!customer) {
     throw new ApiError(500, "Payment session creation failed");
   }

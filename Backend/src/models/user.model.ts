@@ -8,6 +8,27 @@ import mongoose, {
 } from "mongoose";
 import jwt from "jsonwebtoken";
 
+export interface IUser extends Document {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  avatar?: string;
+  refreshToken?: string;
+  google: {
+    accessToken?: string;
+    refreshToken?: string;
+    tokenExpiryDate?: Date;
+  };
+  role: "user" | "host" | "admin";
+  isVerified: boolean;
+  stripeAccountId?: string;
+  depositHeld?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
+}
+
 const UserSchema = new Schema(
   {
     name: {
@@ -21,6 +42,22 @@ const UserSchema = new Schema(
     },
     avatar: {
       type: String,
+    },
+    role: {
+      type: String,
+      enum: ["user", "host", "admin"],
+      default: "user",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    stripeAccountId: {
+      type: String,
+    },
+    depositHeld: {
+      type: Number,
+      default: 0,
     },
     refreshToken: {
       type: String,
@@ -63,17 +100,3 @@ UserSchema.methods.gernateRefreshToken = function () {
 export type UserDoc = HydratedDocument<InferSchemaType<typeof UserSchema>>;
 const User = mongoose.model("User", UserSchema);
 export default User;
-
-export interface IUser extends Document {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  avatar?: string;
-  google?: {
-    accessToken: string;
-    refreshToken: string;
-    tokenExpiryDate: Date;
-  };
-  gernateAccessToken(): string;
-  gernateRefreshToken(): string;
-}

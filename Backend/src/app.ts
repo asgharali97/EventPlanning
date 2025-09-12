@@ -1,17 +1,7 @@
 import express, { Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-import path from 'path';
 
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({
-  path: path.resolve(__dirname, '../.env')
-});
 const app: Express = express();
 
 // middlewares
@@ -34,4 +24,4 @@ app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-booking", eventBookingRoutes);
 
-export default app;
+export  {app}

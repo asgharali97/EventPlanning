@@ -5,6 +5,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { OAuth } from "../utils/googleConfig.js";
 import axios from "axios";
+import stripe from "../utils/stripe.js";
+
 
 interface GoogleTokens {
   access_token: string;
@@ -18,6 +20,10 @@ interface GoogleProfile {
   picture: string;
 }
 
+interface AuthRequest extends Request {
+  user?: IUser;
+}
+
 const gernateAccessTokenAndRefreshToken = async (
   userId: string
 ): Promise<{
@@ -25,12 +31,12 @@ const gernateAccessTokenAndRefreshToken = async (
   refreshToken: string;
 }> => {
   try {
-    const user = await User.findById(userId);
+    const user = (await User.findById(userId)) as IUser;
     if (!user) {
       throw new ApiError(404, "User not found");
     }
-    const accessToken = user.gernateAccessToken();
-    const refreshToken = user.gernateRefreshToken();
+    const accessToken: string = (user as any).generateAccessToken() as string;
+    const refreshToken: string = (user as any).generateRefreshToken() as string;
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
@@ -64,7 +70,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   if (!profile) {
     throw new ApiError(400, "something went wrong while fetching profile data");
   }
-  console.log("profile", profile);
+  console.log(tokens);
   const { email, name, picture } = profile;
   const user = await User.findOneAndUpdate(
     { email },
@@ -74,7 +80,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
       google: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        tokenExpireDate: new Date(tokens.expiry_date),
+        tokenExpireDate: new Date(Number(tokens.expiry_date)),
       },
     },
     { upsert: true, new: true }
@@ -83,7 +89,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(404, "something went wrong while creating user");
   }
-
+ 
   const { accessToken, refreshToken } = await gernateAccessTokenAndRefreshToken(
     user._id
   );
@@ -103,9 +109,79 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, "User created successfully", { user }));
 });
 
-interface AuthRequest extends Request {
-  user?: IUser;
-}
+const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = await User.findById(req?.user._id);
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized, No user found");
+  }
+  if (user.role === "host") {
+    throw new ApiError(400, "already a host");
+  }
+  console.log("call the controller of host");
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 100,
+    currency: "usd",
+    automatic_payment_methods: { enabled: true },
+    metadata: {
+      userId: user._id.toString(),
+      type: "host_verifaction_deposit",
+    },
+  });
+
+  if (!paymentIntent) {
+    throw new ApiError(
+      400,
+      "Something went wrong while creating payment intent"
+    );
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Payment intent created successfully",
+        paymentIntent.client_secret
+      )
+    );
+});
+
+const verifyHostPayment = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const { paymentIntentId } = req.body;
+    console.log("get the id", paymentIntentId);
+    const user = await User.findById(req?.user._id);
+
+    if (!user) {
+      throw new ApiError(401, "Unauthorized, No user found");
+    }
+    if (!paymentIntentId) {
+      throw new ApiError(400, "please provide the PaymentIntentId");
+    }
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (
+      paymentIntent.status !== "succeeded" ||
+      paymentIntent.metadata.userId !== user._id.toString()
+    ) {
+      throw new ApiError(400, "Invalid or failed payment");
+    }
+
+    user.role = "host";
+    user.depositHeld = paymentIntent.amount;
+    user.isVerified = true;
+    const updatedUser = await user.save();
+    if (!updatedUser) {
+      throw new ApiError(400, "Something went wrong while updating user");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "Payment verified successfully", updatedUser));
+  }
+);
 
 const handleLogout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.user?._id) {
@@ -161,4 +237,4 @@ const getUser = asyncHandler(async (req: AuthRequest, res: Response) => {
     .json(new ApiResponse(200, "User fetched successfully", req.user));
 });
 
-export { createUser, handleLogout, getUser };
+export { createUser, handleLogout, getUser, becomeHost, verifyHostPayment };
