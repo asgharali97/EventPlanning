@@ -21,7 +21,7 @@ export interface IUser extends Document {
   };
   role: "user" | "host" | "admin";
   isVerified: boolean;
-  stripeAccountId?: string;
+  stripePaymentId?: string;
   depositHeld?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -52,7 +52,7 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    stripeAccountId: {
+    stripePaymentId: {
       type: String,
     },
     depositHeld: {
@@ -83,7 +83,7 @@ UserSchema.methods.gernateAccessToken = function () {
       _id: this._id,
       email: this.email,
     },
-    process.env.ACCESS_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET || "ahd3m4#jakorau8mcx0ir*9uroq&il",
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
   );
 };
@@ -93,7 +93,7 @@ UserSchema.methods.gernateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET || "il$65RIDOS780%dap898WQIMZPOPI87",
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
   );
 };

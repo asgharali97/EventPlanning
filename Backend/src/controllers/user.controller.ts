@@ -7,7 +7,6 @@ import { OAuth } from "../utils/googleConfig.js";
 import axios from "axios";
 import stripe from "../utils/stripe.js";
 
-
 interface GoogleTokens {
   access_token: string;
   refresh_token: string;
@@ -24,23 +23,19 @@ interface AuthRequest extends Request {
   user?: IUser;
 }
 
-const gernateAccessTokenAndRefreshToken = async (
-  userId: string
-): Promise<{
-  accessToken: string;
-  refreshToken: string;
-}> => {
+const gernateAccessTokenAndRefreshToken = async (userId: string) => {
   try {
-    const user = (await User.findById(userId)) as IUser;
+    const user = await User.findById(userId);
     if (!user) {
       throw new ApiError(404, "User not found");
     }
-    const accessToken: string = (user as any).generateAccessToken() as string;
-    const refreshToken: string = (user as any).generateRefreshToken() as string;
+    const accessToken: string = user.gernateAccessToken();
+    const refreshToken: string = user.gernateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
   } catch (error) {
+    console.log("genrating accesstoken error::", error);
     throw new ApiError(
       500,
       "Something went wrong While generate accessToken and refreshToken"
@@ -49,9 +44,7 @@ const gernateAccessTokenAndRefreshToken = async (
 };
 
 const createUser = asyncHandler(async (req: Request, res: Response) => {
-  console.log("Creating user");
   const { code } = req.body;
-
   if (!code) {
     throw new ApiError(400, "Code is required");
   }
@@ -70,7 +63,6 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   if (!profile) {
     throw new ApiError(400, "something went wrong while fetching profile data");
   }
-  console.log(tokens);
   const { email, name, picture } = profile;
   const user = await User.findOneAndUpdate(
     { email },
@@ -89,7 +81,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(404, "something went wrong while creating user");
   }
- 
+
   const { accessToken, refreshToken } = await gernateAccessTokenAndRefreshToken(
     user._id
   );
@@ -115,6 +107,8 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!user) {
     throw new ApiError(401, "Unauthorized, No user found");
   }
+  user.role = 'user'
+  await user.save();
   if (user.role === "host") {
     throw new ApiError(400, "already a host");
   }
@@ -129,7 +123,6 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
       type: "host_verifaction_deposit",
     },
   });
-
   if (!paymentIntent) {
     throw new ApiError(
       400,

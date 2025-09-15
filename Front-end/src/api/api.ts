@@ -56,6 +56,13 @@ const verifyHostPayment = async ({ paymentIntentId }: { paymentIntentId: string 
   );
 }
 
+const refundHost = async () => {
+  return await api.get(
+    "/host/refund",
+    { withCredentials: true }
+  );
+}
+
 export {
   api,
   googleAuth,
@@ -68,4 +75,5 @@ export {
   getEventById,
   becomeHost,
   verifyHostPayment,
+  refundHost,
 };
