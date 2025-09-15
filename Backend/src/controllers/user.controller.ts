@@ -107,9 +107,7 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!user) {
     throw new ApiError(401, "Unauthorized, No user found");
   }
-  user.role = 'user'
-  await user.save();
-  if (user.role === "host") {
+  if (user?.role === "host") {
     throw new ApiError(400, "already a host");
   }
   console.log("call the controller of host");
@@ -144,7 +142,6 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
 const verifyHostPayment = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const { paymentIntentId } = req.body;
-    console.log("get the id", paymentIntentId);
     const user = await User.findById(req?.user._id);
 
     if (!user) {
