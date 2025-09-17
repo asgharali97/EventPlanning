@@ -24,7 +24,6 @@ interface IEvent extends Document {
   coverImage: string;
   location: string;
   hostId: Types.ObjectId;
-  coupons?: string[];
   isVerified: boolean;
   eventType: "physical" | "online";
   onlineDetails?: IOnlineDetails;
@@ -76,7 +75,6 @@ const evetnSchema = new Schema<IEvent>(
       ref: "User",
       required: true,
     },
-    coupons: [{ type: String }],
     isVerified: {
       type: Boolean,
       default: false,

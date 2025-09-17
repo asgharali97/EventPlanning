@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 const app: Express = express();
 
 // middlewares
-console.log(process.env.CORS_ORIGIN)
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
@@ -20,6 +19,8 @@ app.use((req, res, next) => {
   }
 });
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "16kb" }));
+app.use(express.static("public"));
 app.use(cookieParser());
 
 // routes
@@ -27,9 +28,12 @@ import authRoutes from "./routes/auth.route.js";
 import eventRoutes from "./routes/event.route.js";
 import eventBookingRoutes from "./routes/eventBooking.route.js";
 import hostRoutes from './routes/host.route.js';
+import hostEventRoutes from './routes/hostEvent.route.js';
 
 app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-booking", eventBookingRoutes);
 app.use("/host", hostRoutes);
+app.use('/host', hostEventRoutes)
+
 export  {app}

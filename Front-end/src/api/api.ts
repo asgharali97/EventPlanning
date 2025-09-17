@@ -63,6 +63,26 @@ const refundHost = async () => {
   );
 }
 
+const hostEvent = async (title,price,seats,category,date,time,description,location,eventType,onlineDetails,tags) => {
+  return await api.post(
+    "/host/create-event",
+    {
+      title,
+      price,
+      seats,
+      category,
+      date,
+      time,
+      description,
+      location,
+      eventType,
+      onlineDetails,
+      tags,
+    },
+    { withCredentials: true }
+  );
+}
+
 export {
   api,
   googleAuth,
@@ -76,4 +96,5 @@ export {
   becomeHost,
   verifyHostPayment,
   refundHost,
+  hostEvent
 };
