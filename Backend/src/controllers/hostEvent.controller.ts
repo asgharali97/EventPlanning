@@ -93,6 +93,7 @@ const createEvent = asyncHandler(async (req: Request, res: Response) => {
 
 const updateEvent = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
+  console.log('call')
   console.log(req.body)
   const {
     title,
@@ -228,16 +229,13 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
 
   if (tags !== undefined) {
     if (Array.isArray(tags)) {
-      // Clean and validate new tags
       const newTags = tags.filter(tag => tag?.trim()).map(tag => tag.trim());
       
-      // Merge with existing tags (remove duplicates)
       const existingTags = event.tags || [];
       const mergedTags = [...new Set([...existingTags, ...newTags])];
       
       updateData.tags = mergedTags;
     } else {
-      // If tags is not an array, keep existing tags
       updateData.tags = event.tags || [];
     }
   }

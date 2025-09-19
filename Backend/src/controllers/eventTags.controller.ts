@@ -4,7 +4,6 @@ import Event from "../models/event.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-// Add tags to an event
 const addTagsToEvent = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const { tags } = req.body;
@@ -22,7 +21,6 @@ const addTagsToEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Tags array is required and cannot be empty");
   }
 
-  // Validate and clean tags
   const cleanTags = tags
     .filter(tag => tag && typeof tag === 'string' && tag.trim())
     .map(tag => tag.trim())
@@ -38,7 +36,6 @@ const addTagsToEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Event not found or you are not the host");
   }
 
-  // Merge with existing tags (remove duplicates)
   const existingTags = event.tags || [];
   const mergedTags = [...new Set([...existingTags, ...cleanTags])];
 
@@ -59,7 +56,6 @@ const addTagsToEvent = asyncHandler(async (req: Request, res: Response) => {
   }));
 });
 
-// Remove specific tags from an event
 const removeTagsFromEvent = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const { tags } = req.body;
@@ -77,7 +73,6 @@ const removeTagsFromEvent = asyncHandler(async (req: Request, res: Response) => 
     throw new ApiError(400, "Tags array is required and cannot be empty");
   }
 
-  // Clean tags to remove
   const tagsToRemove = tags
     .filter(tag => tag && typeof tag === 'string' && tag.trim())
     .map(tag => tag.trim());
@@ -92,7 +87,6 @@ const removeTagsFromEvent = asyncHandler(async (req: Request, res: Response) => 
     throw new ApiError(404, "Event not found or you are not the host");
   }
 
-  // Remove specified tags
   const existingTags = event.tags || [];
   const updatedTags = existingTags.filter(tag => !tagsToRemove.includes(tag));
 
@@ -113,7 +107,6 @@ const removeTagsFromEvent = asyncHandler(async (req: Request, res: Response) => 
   }));
 });
 
-// Replace all tags for an event
 const replaceEventTags = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const { tags } = req.body;
@@ -131,13 +124,11 @@ const replaceEventTags = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Tags must be an array");
   }
 
-  // Clean and validate tags
   const cleanTags = tags
     .filter(tag => tag && typeof tag === 'string' && tag.trim())
     .map(tag => tag.trim())
     .filter(tag => tag.length > 0);
 
-  // Remove duplicates
   const uniqueTags = [...new Set(cleanTags)];
 
   const event = await Event.findOne({ _id: eventId, hostId: userId });
@@ -163,7 +154,6 @@ const replaceEventTags = asyncHandler(async (req: Request, res: Response) => {
   }));
 });
 
-// Get all tags for an event
 const getEventTags = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const userId = (req as any).user?._id;
@@ -189,7 +179,6 @@ const getEventTags = asyncHandler(async (req: Request, res: Response) => {
   }));
 });
 
-// Clear all tags from an event
 const clearEventTags = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const userId = (req as any).user?._id;

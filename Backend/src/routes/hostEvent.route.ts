@@ -8,7 +8,9 @@ import {
   updateEvent,
 } from "controllers/hostEvent.controller.js";
 
+
 const router = Router();
+
 router.route("/create-event").post(
   verifyJWT,
   isHost,

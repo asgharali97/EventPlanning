@@ -11,7 +11,6 @@ const uploadOnCloudinary = async (localFilePath: string) => {
   try {
     if (!localFilePath) return null;
     
-    // Check if file exists
     if (!fs.existsSync(localFilePath)) {
       console.error("File does not exist:", localFilePath);
       return null;
@@ -21,10 +20,8 @@ const uploadOnCloudinary = async (localFilePath: string) => {
       resource_type: "auto",
     });
     
-    // Delete local file after successful upload
     try {
       fs.unlinkSync(localFilePath);
-      console.log("Local file deleted successfully:", localFilePath);
     } catch (deleteError) {
       console.error("Error deleting local file:", deleteError);
     }
@@ -32,12 +29,9 @@ const uploadOnCloudinary = async (localFilePath: string) => {
     return response;
   } catch (error) {
     console.error("Error uploading to Cloudinary:", error);
-    
-    // Delete local file even if upload failed
     try {
       if (fs.existsSync(localFilePath)) {
         fs.unlinkSync(localFilePath);
-        console.log("Local file deleted after failed upload:", localFilePath);
       }
     } catch (deleteError) {
       console.error("Error deleting local file after failed upload:", deleteError);

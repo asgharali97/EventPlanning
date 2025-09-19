@@ -29,11 +29,16 @@ import eventRoutes from "./routes/event.route.js";
 import eventBookingRoutes from "./routes/eventBooking.route.js";
 import hostRoutes from './routes/host.route.js';
 import hostEventRoutes from './routes/hostEvent.route.js';
+import couponsRoutes from './routes/coupons.route.js';
+import eventTags from './routes/eventTags.route.js';
 
 app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-booking", eventBookingRoutes);
 app.use("/host", hostRoutes);
-app.use('/host', hostEventRoutes)
+app.use('/event', hostEventRoutes);
+app.use('/coupon',couponsRoutes);
+app.use('/tag',eventTags);
+
 
 export  {app}
