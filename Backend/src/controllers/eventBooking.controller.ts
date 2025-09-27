@@ -6,6 +6,7 @@ import Event from "../models/event.model.js";
 import Stripe from "stripe";
 import EventBooking from "../models/eventBooking.model.js";
 import { IUser } from "models/user.model.js";
+import { generateAndSendTickets } from "./ticket.controller.js";
 
 interface AuthRequest extends Request {
   user?: IUser;
@@ -24,7 +25,7 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
   let paymentStatus: string = "pending";
   const { numberOfTickets, eventId } = req.body;
 
-  const userId = req.user._id;
+  const userId = (req as any).user?._id;
 
   if (!userId) {
     throw new ApiError(400, "User ID is required");
@@ -42,7 +43,6 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
   }
 
   const bookingDate: string = new Date().toISOString().split("T")[0];
-  console.log("bookingDate", bookingDate);
 
   const event = await Event.findById(eventId);
 
@@ -81,13 +81,6 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!customer) {
     throw new ApiError(500, "Payment session creation failed");
   }
-  console.log("customer", customer);
-
-  const updateEvent = await Event.findOneAndUpdate(
-    { _id: eventId },
-    { seats: remaningSeats },
-    { new: true }
-  );
 
   const booking = await EventBooking.create({
     userId,
@@ -96,8 +89,8 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
     bookingDate,
     totalPrice,
     paymentStatus,
+    stripePaymentId: customer.id, 
   });
-  console.log("Booking", booking);
   if (!booking) {
     throw new ApiError(500, "Booking failed");
   }
@@ -114,26 +107,49 @@ const successPay = asyncHandler(async (req: AuthRequest, res: Response) => {
   const stripe = getStripeInstance();
   const { session_id } = req.params;
   const session = await stripe.checkout.sessions.retrieve(session_id);
-
+ 
   if (!session) {
     throw new ApiError(404, "Session not found");
   }
 
   if (session.payment_status === "paid") {
     const booking = await EventBooking.findOneAndUpdate(
-      { eventId: session.metadata.event_id },
+      { stripePaymentId: session_id },
       { paymentStatus: "paid" },
       { new: true }
+    ).populate('eventId').populate('userId', 'name email');
+    if (!booking) {
+      throw new ApiError(404, "Booking not found");
+    }
+    let bookingId = (booking._id as any).toString()
+    const eventId = booking.eventId._id
+
+    const event = await Event.findByIdAndUpdate(
+      { _id: eventId },
+      { $inc: { seats: -booking.numberOfTickets } },
+      { new: true }
     );
-    console.log("Booking", booking);
+
+    if (!event) {
+      throw new ApiError(404, "Event not found");
+    }
+
+    try {
+      await generateAndSendTickets(bookingId);
+    } catch (error) {
+      console.error("Error generating tickets:", error);
+    }
+
     return res
       .status(200)
-      .json(new ApiResponse(200, "Payment successful", { booking }));
+      .json(new ApiResponse(200, "Payment successful and tickets sent", { booking }));
+  } else {
+    throw new ApiError(400, "Payment not completed");
   }
 });
 
-const getBookedEvents = asyncHandler(async (req, res) => {
-  const userId = req.user?._id;
+const getBookedEvents = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = (req.user as any)?._id;
   const events = await EventBooking.find({ userId });
   if (!events) {
     throw new ApiError(404, "No events found");

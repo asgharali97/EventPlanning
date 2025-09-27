@@ -17,6 +17,7 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
   const event = await Event.findById(eventId);  
   if (!event) {
+    console.log("Event not found");
     throw new ApiError(404, "Event not found");
   }
   return res.status(200).json(new ApiResponse(200, "Event fetched successfully", event));

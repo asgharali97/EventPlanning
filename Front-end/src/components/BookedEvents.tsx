@@ -65,7 +65,7 @@ const BookedEvents = () => {
 
   useEffect(() => {
     if (paymentData.eventId) {
-      getEventById(paymentData.eventId)
+      getEventById(paymentData.eventId._id)
         .then((res) => {
           setEventData(res.data.data || {});
         })

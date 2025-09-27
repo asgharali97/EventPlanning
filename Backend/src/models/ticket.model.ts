@@ -13,6 +13,7 @@ interface ITicket extends Document {
   eventId: Types.ObjectId;
   qrCode: string;
   ticketNumber: string;
+  status: "active" | "cancelled" | "used";
   onlineDetails?: {
     link: string;
     password?: string;
@@ -47,6 +48,11 @@ const ticketSchema = new Schema<ITicket>(
       type: String,
       required: true,
       unique: true,
+    },
+    status: {
+      type: String,
+      enum: ["active", "cancelled", "used"],
+      default: "active",
     },
     onlineDetails: {
       link: {

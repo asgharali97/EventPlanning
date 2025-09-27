@@ -31,6 +31,7 @@ import hostRoutes from './routes/host.route.js';
 import hostEventRoutes from './routes/hostEvent.route.js';
 import couponsRoutes from './routes/coupons.route.js';
 import eventTags from './routes/eventTags.route.js';
+import ticketRoutes from './routes/ticket.route.js';
 
 app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
@@ -39,6 +40,7 @@ app.use("/host", hostRoutes);
 app.use('/event', hostEventRoutes);
 app.use('/coupon',couponsRoutes);
 app.use('/tag',eventTags);
+app.use('/ticket', ticketRoutes);
 
 
 export  {app}

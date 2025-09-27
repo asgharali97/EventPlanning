@@ -6,9 +6,9 @@ import verifyJWT from "middleware/jwtVerify.js";
 const router = Router();
 
 router.route('/addtags/:eventId').post(verifyJWT,isHost,addTagsToEvent);
-router.route('/replaceTags/:eventId').patch(verifyJWT,isHost,replaceEventTags);
-router.route('/removeTag/:eventId').patch(verifyJWT,isHost,removeTagsFromEvent)
-router.route('/getTags/:eventId').get(verifyJWT,isHost,getEventTags);
-router.route('/clearTags/:eventId').patch(verifyJWT,isHost,clearEventTags);
+router.route('/replacetags/:eventId').patch(verifyJWT,isHost,replaceEventTags);
+router.route('/removetag/:eventId').patch(verifyJWT,isHost,removeTagsFromEvent);
+router.route('/gettags/:eventId').get(verifyJWT,isHost,getEventTags);
+router.route('/cleartags/:eventId').patch(verifyJWT,isHost,clearEventTags);
 
 export default router;

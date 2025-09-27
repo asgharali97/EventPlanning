@@ -39,6 +39,11 @@ const addTagsToEvent = asyncHandler(async (req: Request, res: Response) => {
   const existingTags = event.tags || [];
   const mergedTags = [...new Set([...existingTags, ...cleanTags])];
 
+  // Check if total tags exceed limit
+  if (mergedTags.length > 20) {
+    throw new ApiError(400, "Maximum 20 tags allowed per event");
+  }
+
   const updatedEvent = await Event.findByIdAndUpdate(
     eventId,
     { $set: { tags: mergedTags } },
@@ -75,7 +80,8 @@ const removeTagsFromEvent = asyncHandler(async (req: Request, res: Response) => 
 
   const tagsToRemove = tags
     .filter(tag => tag && typeof tag === 'string' && tag.trim())
-    .map(tag => tag.trim());
+    .map(tag => tag.trim())
+    .filter(tag => tag.length > 0 && tag.length <= 50);
 
   if (tagsToRemove.length === 0) {
     throw new ApiError(400, "No valid tags provided for removal");
@@ -127,7 +133,11 @@ const replaceEventTags = asyncHandler(async (req: Request, res: Response) => {
   const cleanTags = tags
     .filter(tag => tag && typeof tag === 'string' && tag.trim())
     .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
+    .filter(tag => tag.length > 0 && tag.length <= 50);
+
+  if (cleanTags.length > 20) {
+    throw new ApiError(400, "Maximum 20 tags allowed per event");
+  }
 
   const uniqueTags = [...new Set(cleanTags)];
 

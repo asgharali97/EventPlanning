@@ -15,7 +15,7 @@ interface IEventBooking extends Document {
   numberOfTickets: number;
   totalPrice: number;
   paymentStatus: "paid" | "pending" | "failed";
-  stripePaymentId: string;
+  stripePaymentId?: string;
   reviewStatus?: "pending" | "approved" | "disputed";
   createdAt: Date;
   updatedAt: Date;
@@ -59,7 +59,7 @@ const eventBookingSchema = new Schema<IEventBooking>(
     },
     stripePaymentId: {
       type: String,
-      required: true,
+      required: false,
     },
     reviewStatus: {
       type: String,
