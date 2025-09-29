@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.js";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from "./lib/queryClient";
 import SignIn from "./components/SignIn";
 import HeroSection from "./components/HeroSection";
 import Event from "./components/Event";
@@ -51,6 +53,8 @@ const router = createBrowserRouter([
 const root = document.getElementById("root") as HTMLElement;
 createRoot(root).render(
   <StrictMode>
+  <QueryClientProvider client={queryClient}>
     <RouterProvider router={router} />
+  </QueryClientProvider>
   </StrictMode>
 );

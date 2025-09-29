@@ -32,12 +32,14 @@ import hostEventRoutes from './routes/hostEvent.route.js';
 import couponsRoutes from './routes/coupons.route.js';
 import eventTags from './routes/eventTags.route.js';
 import ticketRoutes from './routes/ticket.route.js';
+import reviewRoutes from './routes/review.route.js';
 
 app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-booking", eventBookingRoutes);
 app.use("/host", hostRoutes);
 app.use('/event', hostEventRoutes);
+app.use('/review', reviewRoutes);
 app.use('/coupon',couponsRoutes);
 app.use('/tag',eventTags);
 app.use('/ticket', ticketRoutes);

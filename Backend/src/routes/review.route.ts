@@ -10,9 +10,12 @@ import {
 } from "controllers/review.controller.js";
 const router = Router();
 
-router.get("/event/:eventId", getEventReviews);
+router.get("/:eventId", getEventReviews);
 
 router.post("/", verifyJWT, upload.array("images", 4), addReview);
 router.delete("/:reviewId", verifyJWT, deleteReview);
 router.get("/my-reviews", verifyJWT, getUserReviews);
 router.put("/:reviewId", verifyJWT, updateReview);
+
+
+export default router;
