@@ -1,6 +1,36 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "satoshi-mdedium";
+  src: url("./assets/satoshi-otf/Satoshi-Medium.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "satoshi-bold";
+  src: url("./assets/satoshi-otf/Satoshi-Bold.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "clash-mdedium";
+  src: url("./assets/clash-otf/ClashDisplay-Medium.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "clash-bold";
+  src: url("./assets/clash-otf/ClashDisplay-Bold.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #0f1419;
@@ -148,6 +178,24 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+}
+
+.satoshi-mdedium {
+  font-family: "satoshi-mdedium", sans-serif;
+}
+
+.satoshi-bold {
+  font-family: "satoshi-bold", sans-serif;
+  font-weight: bold;
+}
+
+.clash-mdedium {
+  font-family: "clash-mdedium", sans-serif;
+}
+
+.clash-bold {
+  font-family: "clash-bold", sans-serif;
+  font-weight: bold;
 }
 
  .popup::-webkit-scrollbar {

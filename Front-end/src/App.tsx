@@ -1,15 +1,23 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { AuthContextProvider } from "./context/AuthContext";
+import background from '/background.png'
+
 function App() {
-  
+  const location = useLocation();
+
+  const isHomePage = location.pathname === '/';
   return (
-    // color pelette
-    // bg-[#030712]
-    // mian color #6d28d9
-    // normal text color #808793
     <>
-      <div className="w-full bg-[#030712] text-white">
+      <div className="w-full min-h-screen"
+      style={{
+        backgroundImage: isHomePage ? `url('${background}')` : "none",
+        backgroundColor: isHomePage ? "transparent" : "var(--background)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        color: "var(--foreground)",
+      }}
+      >
         <AuthContextProvider>
         <Navbar />
         <Outlet />
