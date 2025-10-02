@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from '../lib/axios';
-import { useUIStore } from '../store/uiStore';
+import axios from '@/lib/axios';
+import { useUIStore } from '@/store/uiStore';
 
 interface Review {
   _id: string;

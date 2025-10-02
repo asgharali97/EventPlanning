@@ -1,27 +1,29 @@
 import { Outlet, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import { AuthContextProvider } from "./context/AuthContext";
-import background from '/background.png'
-
+import Navbar from "@/components/Navbar";
+import background from "/background.png";
+import { useUser } from "@/hooks/useUser";
+import  Container  from "@/components/Container";
 function App() {
+  useUser();
   const location = useLocation();
 
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
   return (
     <>
-      <div className="w-full min-h-screen"
-      style={{
-        backgroundImage: isHomePage ? `url('${background}')` : "none",
-        backgroundColor: isHomePage ? "transparent" : "var(--background)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        color: "var(--foreground)",
-      }}
+      <div
+        className="w-full min-h-screen"
+        style={{
+          backgroundImage: isHomePage ? `url('${background}')` : "none",
+          backgroundColor: isHomePage ? "transparent" : "var(--background)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          color: "var(--foreground)",
+        }}
       >
-        <AuthContextProvider>
         <Navbar />
-        <Outlet />
-        </AuthContextProvider>
+        <Container>
+          <Outlet />
+        </Container>
       </div>
     </>
   );

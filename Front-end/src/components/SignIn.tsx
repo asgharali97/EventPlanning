@@ -2,7 +2,8 @@ import { Button } from "./ui/button";
 import { useGoogleLogin } from "@react-oauth/google";
 import { googleAuth } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthStore } from '@/store/authStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface tokenResponse {
   authuser: string;
@@ -12,17 +13,21 @@ interface tokenResponse {
 }
 
 const SignIn = () => {
+  const { setAuth } = useAuthStore();
   const navigate = useNavigate();
-  const { setUser } = useAuthContext();
+  const queryClient = useQueryClient()
   const handleSuccess = async (tokenResponse : tokenResponse) => {
     console.log("req come");
     console.log(tokenResponse);
     try {
       console.log("Google login success:", tokenResponse);
       const { data } = await googleAuth(tokenResponse.code);
-      if (data.data.user) {
-        setUser(data.data.user);
-        navigate("/");
+       const user = data.data.user;
+      if (user) {
+        setAuth(user);
+        queryClient.setQueryData(['user'], user);
+        console.log('Login successful:', user);
+        navigate("/events");
       }
     } catch (error) {
       console.error("got error while logging with google", error);

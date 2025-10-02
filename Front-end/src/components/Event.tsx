@@ -1,330 +1,247 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from 'react';
+import { useEvents } from "../hooks/useEvent";
+import { useUIStore } from "@/store/uiStore";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import {
-  Calendar,
-  Clock,
-  MapPin,
-  DollarSign,
-  Users,
-  Ticket,
-  CreditCard,
-  Minus,
-  Plus,
-  X,
-} from "lucide-react";
-import { getAllEvents, paymentApi } from "../api/api";
-import { useAuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarIcon, MapPin, Clock, Users, Star } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "../lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 
-interface EventData {
-  category: string;
-  coverImage: string;
-  description: string;
-  location: string;
-  price: Number;
-  seats: Number;
-  time: string;
-  title: string;
-  date:string;
-  seatsAvailable:number;
-  _id: string;
-}
+const Event: React.FC = () => {
+  const { eventFilter, setEventFilter } = useUIStore();
+  const { data: events, isLoading, error } = useEvents();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
-const Event = () => {
-  const { user } = useAuthContext();
-  const [eventData, setEventData] = useState<EventData[]>([]);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState("");
-  const [tacketsQuntity, setTacketsQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  if (isLoading)
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border)]">
+        {Array(6)
+          .fill(0)
+          .map((_, i) => (
+            <Skeleton key={i} className="h-96 w-full" />
+          ))}
+      </div>
+    );
 
-  const navigate = useNavigate();
+  if (error)
+    return (
+      <div className="py-8">
+        <Alert variant="destructive">
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Failed to load events"}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
 
-  const openPopup = (eventId: string) => {
-    setSelectedEventId(eventId);
-    setIsPopupOpen(true);
-    console.log(isPopupOpen);
-    setTacketsQuantity(1);
-  };
+  if (!events || events.length === 0)
+    return (
+      <div className="py-8">
+        <Alert>
+          <AlertDescription>
+            No events found matching your criteria
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
 
-  const closePopup = () => {
-    setSelectedEventId("");
-    setIsPopupOpen(false);
-    setTacketsQuantity(1);
-  };
-
-  const incrementTickets = () => {
-    if (tacketsQuntity < 10) {
-      setTacketsQuantity(tacketsQuntity + 1);
-    }
-  };
-
-  const decrementTickets = () => {
-    if (tacketsQuntity > 1) {
-      setTacketsQuantity(tacketsQuntity - 1);
-    }
-  };
-
-  const handlePayment = async (eventId: string, numberOfTickets: number) => {
-    if (!user) navigate("/signin");
-    try {
-      const response = await paymentApi(eventId, numberOfTickets);
-      window.location.href = response.data.data.customer;
-    } catch (error) {
-      throw new Error("Payment failed. Please try again later.", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data } = await getAllEvents();
-        setEventData(data.data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {}, [eventData]);
-
-  const selectedEvent = selectedEventId && eventData.find((event) => event._id === selectedEventId);
-
-  const totalPrice = selectedEvent ? selectedEvent.price * tacketsQuntity : 0;
   return (
-    <>
-      <div className="w-full py-2 px-4 min-h-screen">
-        <div className="grid grid-cols-3 gap-8 w-full h-full py-12 px-8">
-          {eventData?.map((event, index) => {
-            const allSeatsBooked = event.seats === 0;
-            const date = new Date(`${event.date}`).toDateString();
-            return (
-              <div
-                className="w-[25rem] bg-gray-900 border border-gray-800 rounded-sm shadow-lg overflow-hidden hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 my-4"
-                key={index}
-              >
-                <div className="relative">
-                  <img
-                    src={event.coverImage}
-                    alt={event.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {event.category}
-                    </span>
-                  </div>
-                  {allSeatsBooked && (
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-violet-800 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Seats Booked
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                    {event.description}
-                  </p>
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <Calendar className="w-4 h-4 text-violet-400" />
-                      <span className="text-sm font-medium">{date}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <Clock className="w-4 h-4 text-violet-400" />
-                      <span className="text-sm font-medium">{event.time}</span>
-                    </div>
-                  </div>
+    <div className="satoshi-medium">
+      <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
+        <Select
+          value={eventFilter.type}
+          onValueChange={(value: "all" | "physical" | "online") =>
+            setEventFilter({ type: value })
+          }
+        >
+          <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent className="px-1 satoshi-regular">
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="physical">Physical</SelectItem>
+            <SelectItem value="online">Online</SelectItem>
+          </SelectContent>
+        </Select>
 
-                  <div className="flex items-center gap-2 mb-4 text-gray-300">
-                    <MapPin className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                    <span className="text-sm font-medium truncate">
-                      {event.location}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-green-400">
-                        ${event.price.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">
-                        {allSeatsBooked
-                          ? "All Seats Booked"
-                          : `${event.seats} seats left`}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 cursor-pointer disabled:bg-violet-400 disabled:text-[#dedede] disabled:cursor-not-allowed"
-                    onClick={() => openPopup(event._id)}
-                    disabled={allSeatsBooked}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {isPopupOpen && selectedEvent && (
-          <div className=" fixed inset-0 backdrop-blur-md bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="popup bg-gray-900 border border-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Book Tickets</h2>
-                <button
-                  onClick={closePopup}
-                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-              <div className="relative">
-                <img
-                  src={selectedEvent.coverImage}
-                  alt={selectedEvent.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-3 left-3">
-                  <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {selectedEvent.category}
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {selectedEvent.title}
-                </h3>
+        <Input
+          placeholder="Search events..."
+          value={eventFilter.search}
+          onChange={(e) => setEventFilter({ search: e.target.value })}
+          className="w-full sm:w-48 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]"
+        />
 
-                <p className="text-gray-400 text-sm mb-4">
-                  {selectedEvent.description}
-                </p>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full sm:w-48 justify-start text-left font-normal satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]",
+                !eventFilter.date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {eventFilter.date
+                ? format(new Date(eventFilter.date), "PPP")
+                : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 border border-[var(--border)]">
+            <Calendar
+              mode="single"
+              selected={
+                eventFilter.date ? new Date(eventFilter.date) : undefined
+              }
+              onSelect={(date) =>
+                setEventFilter({
+                  date: date ? format(date, "yyyy-MM-dd") : undefined,
+                })
+              }
+              initialFocus
+              className="satoshi-regular"
+            />
+          </PopoverContent>
+        </Popover>
 
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-2 text-gray-300">
-                    <Calendar className="w-4 h-4 text-violet-400" />
-                    <span className="text-sm font-medium">
-                      {selectedEvent.date}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-300">
-                    <Clock className="w-4 h-4 text-violet-400" />
-                    <span className="text-sm font-medium">
-                      {selectedEvent.time}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mb-4 text-gray-300">
-                  <MapPin className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">
-                    {selectedEvent.location}
-                  </span>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Ticket className="w-4 h-4 text-violet-400" />
-                      <span className="text-white font-medium">Tickets</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm">
-                        {selectedEvent.seatsAvailable} available
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={decrementTickets}
-                        disabled={tacketsQuntity <= 1}
-                        className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                      >
-                        <Minus className="w-4 h-4 text-white" />
-                      </button>
-                      <span className="text-white font-semibold text-lg w-8 text-center">
-                        {tacketsQuntity}
-                      </span>
-                      <button
-                        onClick={incrementTickets}
-                        disabled={tacketsQuntity >= 10}
-                        className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                      >
-                        <Plus className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4 text-green-400" />
-                        <span className="text-lg font-bold text-green-400">
-                          {selectedEvent.price.toFixed(2)}
-                        </span>
-                        <span className="text-gray-400 text-sm">each</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-4 mb-4 space-y-2">
-                  <div className="flex justify-between text-gray-300">
-                    <span>Tickets ({tacketsQuntity}x)</span>
-                    <span>${totalPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t border-gray-700 pt-2 flex justify-between text-white font-bold">
-                    <span>Total</span>
-                    <span>${totalPrice.toFixed(2)}</span>
-                  </div>
-                </div>
-                <button
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsLoading(true);
-                    handlePayment(selectedEvent._id, tacketsQuntity).finally(
-                      () => {
-                        setIsLoading(false);
-                      }
-                    );
-                  }}
-                >
-                  {isLoading ? (
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    <CreditCard className="w-4 h-4" />
-                  )}
-                  Pay Now - ${totalPrice.toFixed(2)}
-                </button>
+        <Select
+          value={eventFilter.sortByPrice || "none"}
+          onValueChange={(value: "asc" | "desc" | "none") =>
+            setEventFilter({ sortByPrice: value === "none" ? null : value })
+          }
+        >
+          <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+            <SelectValue placeholder="Sort Price" />
+          </SelectTrigger>
+          <SelectContent className="px-1 satoshi-regular">
+            <SelectItem value="none">None</SelectItem>
+            <SelectItem value="asc">Low to High</SelectItem>
+            <SelectItem value="desc">High to Low</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border-b  border-[var(--border)] py-4">
+        {events?.map((event) => (
+          <article 
+            key={event._id} 
+            className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular  rounded-2xl"
+          >
+            <div className="relative aspect-video overflow-hidden">
+              <img 
+                src={event.coverImage} 
+                alt={event.title}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105  rounded-t-2xl"
+              />
+              <div className="absolute top-3 right-3 flex items-center gap-1  backdrop-blur-sm px-2 py-1 rounded-md">
+                <Star className="w-3.5 h-3.5 stroke-yellow-300 fill-yellow-300" />
+                <span className="text-white text-sm font-medium satoshi-medium">
+                  {event.rating || "4.5"}
+                </span>
               </div>
             </div>
-          </div>
-        )}
+            <div className="p-4 space-y-3">
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]">
+                  {event.title}
+                </h3>
+                <div className="flex justify-between">
+                <p className="text-sm font-600 text-[var(--muted-foreground)] satoshi-regular">
+                  {event.category || "General"}
+                </p>
+                <div className="">
+                <span className=
+                  "px-2 py-1 rounded-md text-xs font-medium satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
+                 >
+                  {event.eventType === 'online' ? 'Online' : 'Physical'}
+                </span>
+              </div>
+                </div>
+              </div>
+              {event.description && (
+                <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
+                  {event.description}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">
+                <div className="flex items-start gap-2">
+                  <CalendarIcon className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                      Date
+                    </p>
+                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                      {format(new Date(event.date), "MMM dd, yyyy")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                      Time
+                    </p>
+                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                      {event.time || "6:00 PM"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                      Location
+                    </p>
+                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                      {event.location || "Online"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Users className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                      Seats
+                    </p>
+                    <p className="text-sm satoshi-medium text-[var(--foreground)]">
+                      {event.seats} left
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                  <p className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
+                    ${event.price}
+                  </p>
+                <Button
+                  size="sm"
+                  className="satoshi-medium shadow-sm hover:shadow-md transition-shadow"
+                  onClick={() => {
+                    setSelectedEventId(event._id);
+                    useUIStore.getState().setBookingDialog(true);
+                  }}
+                >
+                  Book Now
+                </Button>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
-    </>
+    </div>
   );
 };
 

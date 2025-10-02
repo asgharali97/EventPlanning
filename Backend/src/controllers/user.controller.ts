@@ -76,7 +76,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
       },
     },
     { upsert: true, new: true }
-  ).select("-google");
+  ).select("-google -refreshToken");
 
   if (!user) {
     throw new ApiError(404, "something went wrong while creating user");

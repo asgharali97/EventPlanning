@@ -32,7 +32,7 @@ interface IEvent extends Document {
   updatedAt: Date;
 }
 
-const eventSchema = new Schema<IEvent>(
+const evetnSchema = new Schema<IEvent>(
   {
     title: {
       type: String,
@@ -99,13 +99,13 @@ const eventSchema = new Schema<IEvent>(
   },
   { timestamps: true }
 );
-eventSchema.index({
+evetnSchema.index({
   title: "text",
   description: "text",
   location: "text",
   tags: "text",
 });
 
-export type EventDoc = HydratedDocument<InferSchemaType<typeof eventSchema>>;
-const Event = model<IEvent>("Event", eventSchema);
+export type EventDoc = HydratedDocument<InferSchemaType<typeof evetnSchema>>;
+const Event = model<IEvent>("Event", evetnSchema);
 export default Event;

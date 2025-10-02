@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from '../lib/axios';
-import { useAuthStore } from '../store/authStore';
-import { useUIStore } from '../store/uiStore';
+import axios from '@/lib/axios';
+import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
 
 export const useHostStatus = () => {
   const { user, updateUser } = useAuthStore();

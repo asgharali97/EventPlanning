@@ -9,8 +9,12 @@
     "noEmit": true,
     "baseUrl": "./src",
     "paths": {
-      "@shared/*": ["../shared/*"]
-    },
+      "@/*": ["*"],
+      "@shared/*": ["../shared/*"],
+      "@components/*": ["components/*"],
+      "@lib/*": ["lib/*"],
+      "@ui/*": ["ui/*"]
+  },
     "types": ["vite/client"]
   },
   "include": ["src", "../shared"]

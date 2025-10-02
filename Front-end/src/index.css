@@ -15,6 +15,13 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "satoshi-regular";
+  src: url("./assets/satoshi-otf/Satoshi-Regular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 @font-face {
   font-family: "clash-mdedium";
@@ -68,7 +75,7 @@
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 1.3rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
+  --shadow-2xs: 0px 2px 0px 0px #1da1f200;
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
@@ -182,6 +189,10 @@
 
 .satoshi-mdedium {
   font-family: "satoshi-mdedium", sans-serif;
+}
+
+.satoshi-regular {
+  font-family: "satoshi-regular", sans-serif;
 }
 
 .satoshi-bold {

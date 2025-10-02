@@ -48,5 +48,5 @@ const reviewSchema = new Schema<IReview>(
 
 
 export type ReviewDoc = HydratedDocument<InferSchemaType<typeof reviewSchema>>;
-const Review = model<IReview>("Event", reviewSchema);
+const Review = model<IReview>("Review", reviewSchema);
 export default Review;

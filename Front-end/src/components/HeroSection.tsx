@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Link } from 'react-router-dom';
 const EventSphereLanding = () => {
   return (
       <>
@@ -20,7 +20,9 @@ const EventSphereLanding = () => {
 
           <div className="flex items-center justify-center gap-12 pt-8">
             <button className="px-6 py-2 bg-black text-white border-1 border-[var(--popover)] text-md font-semibold rounded-xl cursor-pointer shadow-[1px_-2px_20px_#0f1419]">
-              Explore Events
+              <Link to="/events">
+                Explore Events
+              </Link>
             </button>
              <button className="px-6 py-2 bg-[var(--primary)] text-[var(--accent)] text-md font-semibold rounded-xl cursor-pointer shadow-[1px_-2px_20px_#0f1419] ">
               Host an Event
