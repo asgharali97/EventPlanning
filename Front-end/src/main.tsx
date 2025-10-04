@@ -11,6 +11,7 @@ import Event from "./components/Event";
 import BookedEvents from "./components/BookedEvents";
 import AllBookedEvents from "./components/AllBookedEvents";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import EventDetail from "./components/EventDetail";
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/events",
         element: <Event />,
+      },
+      {
+        path: "/event/:eventId",
+        element: <EventDetail />,
       },
       {
         path: "booked-events/:session_id",

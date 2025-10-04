@@ -227,4 +227,18 @@ const getUser = asyncHandler(async (req: AuthRequest, res: Response) => {
     .json(new ApiResponse(200, "User fetched successfully", req.user));
 });
 
-export { createUser, handleLogout, getUser, becomeHost, verifyHostPayment };
+const getUserById = asyncHandler(async (req: Request, res: Response) => {
+  const { userId }  = req.body;
+  if (!userId) {
+    throw new ApiError(404, "UserId not provided");
+  }
+
+  const user = await User.findById(userId).select("-google -refreshToken");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  return res.status(200).json(new ApiResponse(200, "User fetched successfuly", user))
+});
+
+export { createUser, handleLogout, getUser, becomeHost, verifyHostPayment, getUserById };

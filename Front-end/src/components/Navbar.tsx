@@ -16,7 +16,6 @@ import { Button } from './ui/button';
 
 const Navbar = () => {
   const { user, clearAuth } = useAuthStore();
-  console.log(user)
   const { isLoading } = useUser();
   const location = useLocation();
   const isHomePage = location.pathname === "/";

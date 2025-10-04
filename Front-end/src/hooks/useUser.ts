@@ -1,15 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import axios from '../lib/axios';
-import { useAuthStore } from '@/store/authStore';
-import { useUIStore } from '@/store/uiStore';
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import axios from "../lib/axios";
+import { useAuthStore } from "@/store/authStore";
+import { useUIStore } from "@/store/uiStore";
 
 interface User {
   id: string;
   name: string;
   email: string;
   avatar?: string;
-  role: 'user' | 'host';
+  role: "user" | "host";
   isVerified: boolean;
   depositHeld: boolean;
   stripePaymentId?: string;
@@ -20,20 +20,22 @@ export const useUser = () => {
   const { addToast, setAppLoading } = useUIStore();
 
   const query = useQuery<User>({
-    queryKey: ['user'],
+    queryKey: ["user"],
     queryFn: async () => {
       setAppLoading(true);
-      console.log('Fetching user...');
+      console.log("Fetching user...");
       try {
-        const { data } = await axios.get('/auth/user');
-        console.log('User data received:', data);
+        const { data } = await axios.get("/auth/user");
         return data;
       } catch (error: any) {
         setAppLoading(false);
-        addToast(error.response?.data?.message || 'Failed to fetch user', 'destructive');
+        addToast(
+          error.response?.data?.message || "Failed to fetch user",
+          "destructive"
+        );
         if (error.response?.status === 401) {
           clearAuth();
-          window.location.href = '/signin';
+          window.location.href = "/signin";
         }
         throw error;
       } finally {
@@ -47,10 +49,42 @@ export const useUser = () => {
 
   useEffect(() => {
     if (query.data) {
-      console.log('Setting auth with user data:', query.data);
+      console.log("Setting auth with user data:", query.data);
       setAuth(query.data);
     }
   }, [query.data, setAuth]);
 
+  return query;
+};
+
+export const useUserById = (userId: string) => {
+  const query = useQuery<User>({
+    queryKey: ["user", userId],
+
+    queryFn: async () => {
+      try {
+        const response = await axios.post(`/auth/get-userById`, { userId });
+
+        const userData = response.data?.data || response.data;
+
+        if (!userData || typeof userData !== "object") {
+          console.error("Invalid user response format:", response.data);
+          throw new Error("Invalid user data received");
+        }
+
+        return userData as User;
+      } catch (error: any) {
+        console.error("Fetch User By ID Error:", error);
+        if (error.response?.status === 404) {
+          throw new Error("User not found");
+        } else if (error.response?.status === 403) {
+          throw new Error("You do not have permission to view this user");
+        }
+
+        throw error;
+      }
+    },
+    enabled: !!userId,
+  });
   return query;
 };

@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, MapPin, Clock, Users, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "../lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,6 +27,7 @@ const Event: React.FC = () => {
   const { eventFilter, setEventFilter } = useUIStore();
   const { data: events, isLoading, error } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   if (isLoading)
     return (
@@ -60,6 +62,9 @@ const Event: React.FC = () => {
       </div>
     );
 
+  const handleEventClick = async (eventId: string) => {
+     navigate(`/event/${eventId}`);
+  }
   return (
     <div className="satoshi-medium">
       <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
@@ -139,12 +144,13 @@ const Event: React.FC = () => {
           <article 
             key={event._id} 
             className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular  rounded-2xl"
+            onClick={() => handleEventClick(event._id)}
           >
             <div className="relative aspect-video overflow-hidden">
               <img 
                 src={event.coverImage} 
                 alt={event.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105  rounded-t-2xl"
+                className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl  group-hover:scale-105"
               />
               <div className="absolute top-3 right-3 flex items-center gap-1  backdrop-blur-sm px-2 py-1 rounded-md">
                 <Star className="w-3.5 h-3.5 stroke-yellow-300 fill-yellow-300" />
@@ -162,7 +168,7 @@ const Event: React.FC = () => {
                 <p className="text-sm font-600 text-[var(--muted-foreground)] satoshi-regular">
                   {event.category || "General"}
                 </p>
-                <div className="">
+                <div>
                 <span className=
                   "px-2 py-1 rounded-md text-xs font-medium satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
                  >
@@ -173,7 +179,7 @@ const Event: React.FC = () => {
               </div>
               {event.description && (
                 <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                  {event.description}
+                  {event.description} 
                 </p>
               )}
               <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">
