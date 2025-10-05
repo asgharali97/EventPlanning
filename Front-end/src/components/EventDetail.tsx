@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUserById } from "@/hooks/useUser";
 import BookEvent from "./BookEvent";
-import { useReviews,useAddReview } from "@/hooks/useReview";
+import { useReviews, useAddReview, useReviewEligibility } from "@/hooks/useReview";
+import { useAuthStore } from "@/store/authStore";
 
 const EventDetail = () => {
   const [rating, setRating] = useState(0);
@@ -21,10 +22,12 @@ const EventDetail = () => {
   
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  
   const { data: event, isLoading, error } = useEventById(eventId);
   const { data: reviews = [], isLoading: reviewsLoading, error: reviewError } = useReviews(eventId);
-  console.log("reveiw",reviews)
   const { mutate: addReview, isLoading: isSubmitting } = useAddReview();
+  const { data: eligibility, isLoading: eligibilityLoading } = useReviewEligibility(eventId, user?._id);
   
   const hostId = event?.hostId;
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
@@ -115,7 +118,6 @@ const EventDetail = () => {
 
   const removeImage = (index: number) => {
     URL.revokeObjectURL(previewImages[index]);
-    
     setReviewImages(reviewImages.filter((_, i) => i !== index));
     setPreviewImages(previewImages.filter((_, i) => i !== index));
   };
@@ -321,95 +323,114 @@ const EventDetail = () => {
 
           <div className="mt-8 -mx-6 px-8 pb-6">
             <h4 className="text-2xl font-bold mb-6">Write a Review</h4>
-
-            <div className="mb-4">
-              <p className="text-sm text-[var(--secondary)] mb-2">
-                Your Rating
-              </p>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => handleRatingClick(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`w-8 h-8 cursor-pointer transition-colors ${
-                        star <= (hoverRating || rating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-[var(--border)]"
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-[var(--secondary)] mb-2">
-                Your Review
-              </p>
-              <Textarea
-                placeholder="Share your experience with this event..."
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                className="min-h-[120px] resize-none border-[var(--border)] satoshi-regular"
-              />
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-[var(--secondary)] mb-2">
-                Add Photos (Optional) - Max 4 images
-              </p>
-
-              {previewImages.length > 0 && (
-                <div className="flex gap-2 mb-3 flex-wrap">
-                  {previewImages.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={image}
-                        alt={`Upload ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg border border-[var(--border)]"
-                      />
+            {!user ? (
+              <Alert className="mb-4">
+                <AlertDescription>
+                  Please log in to write a review.
+                </AlertDescription>
+              </Alert>
+            ) :
+            eligibilityLoading ? (
+              <Skeleton className="h-32 w-full" />
+            ) :
+            !eligibility?.canReview ? (
+              <Alert className="mb-4">
+                <AlertDescription>
+                  {eligibility?.reason || "You are not able review this event"}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <p className="text-sm text-[var(--secondary)] mb-2">
+                    Your Rating
+                  </p>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
                       <button
+                        key={star}
                         type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-[var(--foreground)] text-[var(--background)] rounded-full p-1 hover:bg-[var(--secondary)]"
+                        onClick={() => handleRatingClick(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="transition-transform hover:scale-110"
                       >
-                        <X className="w-3 h-3" />
+                        <Star
+                          className={`w-8 h-8 cursor-pointer transition-colors ${
+                            star <= (hoverRating || rating)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-[var(--border)]"
+                          }`}
+                        />
                       </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              )}
 
-              {reviewImages.length < 4 && (
-                <label className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-[var(--accent)] transition-colors">
-                  <Upload className="w-4 h-4" />
-                  <span className="text-sm satoshi-regular">
-                    Upload Photos ({reviewImages.length}/4)
-                  </span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
+                <div className="mb-4">
+                  <p className="text-sm text-[var(--secondary)] mb-2">
+                    Your Review
+                  </p>
+                  <Textarea
+                    placeholder="Share your experience with this event..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="min-h-[120px] resize-none border-[var(--border)] satoshi-regular"
                   />
-                </label>
-              )}
-            </div>
+                </div>
 
-            <Button
-              onClick={handleSubmitReview}
-              disabled={!rating || !reviewText.trim() || isSubmitting} 
-              className="w-full satoshi-medium"
-            >
-              {isSubmitting ? "Submitting..." : "Submit Review"}
-            </Button>
+                <div className="mb-4">
+                  <p className="text-sm text-[var(--secondary)] mb-2">
+                    Add Photos (Optional) - Max 4 images
+                  </p>
+
+                  {previewImages.length > 0 && (
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {previewImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Upload ${index + 1}`}
+                            className="w-20 h-20 object-cover rounded-lg border border-[var(--border)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-[var(--foreground)] text-[var(--background)] rounded-full p-1 hover:bg-[var(--secondary)]"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {reviewImages.length < 4 && (
+                    <label className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-[var(--accent)] transition-colors">
+                      <Upload className="w-4 h-4" />
+                      <span className="text-sm satoshi-regular">
+                        Upload Photos ({reviewImages.length}/4)
+                      </span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleSubmitReview}
+                  disabled={!rating || !reviewText.trim() || isSubmitting}
+                  className="w-full satoshi-medium"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Review"}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -11,6 +11,13 @@ interface Review {
   eventId: string;
 }
 
+interface ReviewEligibility {
+  canReview: boolean;
+  reason: string;
+  eventDate?: string;
+  existingReview?: any;
+}
+
 export const useReviews = (eventId: string) => {
   const { addToast } = useUIStore();
   return useQuery<Review[]>({
@@ -89,5 +96,18 @@ export const useAddReview = () => {
         'Failed to submit review. Please try again.';
       addToast(errorMessage, 'destructive');
     },
+  });
+};
+
+
+export const useReviewEligibility = (eventId: string | undefined, userId: string | undefined) => {
+  return useQuery<ReviewEligibility>({
+    queryKey: ['reviewEligibility', eventId, userId],
+    queryFn: async () => {
+      const { data } = await axios.get(`/review/eligibility/${eventId}`);
+      return data.data;
+    },
+    enabled: !!eventId && !!userId,
+    retry: false,
   });
 };

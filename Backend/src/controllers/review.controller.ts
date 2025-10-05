@@ -8,6 +8,65 @@ import Review from "../models/review.model.js";
 import Event from "../models/event.model.js"; 
 import mongoose from "mongoose";
 
+const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = (req.user as any)?._id;
+  const { eventId } = req.params;
+
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  const eventDate = new Date(event.date);
+  const now = new Date();
+  const hasEventPassed = eventDate < now;
+
+  if (!hasEventPassed) {
+    return res.status(200).json(
+      new ApiResponse(200, "Eligibility check", {
+        canReview: false,
+        reason: "Event has not occurred yet",
+        eventDate: eventDate,
+      })
+    );
+  }
+
+  const booking = await EventBooking.findOne({
+    userId,
+    eventId,
+    status: "confirmed",
+    paymentStatus: "paid",
+  });
+
+  if (!booking) {
+    return res.status(200).json(
+      new ApiResponse(200, "Eligibility check", {
+        canReview: false,
+        reason: "You have not booked this event",
+      })
+    );
+  }
+
+  const existingReview = await Review.findOne({ userId, eventId });
+
+  if (existingReview) {
+    return res.status(200).json(
+      new ApiResponse(200, "Eligibility check", {
+        canReview: false,
+        reason: "You have already reviewed this event",
+        existingReview: existingReview,
+      })
+    );
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, "Eligibility check", {
+      canReview: true,
+      reason: "You can review this event",
+    })
+  );
+});
+
 const addReview = asyncHandler(async (req: Request, res: Response) => {
   const { review, rating, eventId } = req.body;
   const userId = (req.user as any)?._id;
@@ -15,7 +74,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
   if (!userId) {
     throw new ApiError(401, "User not authenticated");
   }
-
+  
   if (!review || !rating || !eventId) {
     throw new ApiError(400, "Review, rating, and eventId are required");
   }
@@ -27,6 +86,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
   if (review.trim().length < 10 || review.trim().length > 1000) {
     throw new ApiError(400, "Review must be between 10 and 1000 characters");
   }
+  const ratignNumber = parseInt(rating, 10);
 
   const eventExists = await Event.findById(eventId);
   if (!eventExists) {
@@ -82,7 +142,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
   try {
     const newReview = await Review.create({
       review: review.trim(),
-      rating: parseInt(rating),
+      rating: ratignNumber,
       images: uploadedImages,
       userId,
       eventId
@@ -273,6 +333,7 @@ const updateReview = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export {
+  checkReviewEligibility,
   addReview,
   deleteReview,
   getEventReviews,

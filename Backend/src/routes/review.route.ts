@@ -7,6 +7,7 @@ import {
   deleteReview,
   getUserReviews,
   updateReview,
+  checkReviewEligibility,
 } from "controllers/review.controller.js";
 const router = Router();
 
@@ -16,6 +17,6 @@ router.post("/", verifyJWT, upload.array("images", 4), addReview);
 router.delete("/:reviewId", verifyJWT, deleteReview);
 router.get("/my-reviews", verifyJWT, getUserReviews);
 router.put("/:reviewId", verifyJWT, updateReview);
-
+router.get('/eligibility/:eventId',verifyJWT,checkReviewEligibility)
 
 export default router;
