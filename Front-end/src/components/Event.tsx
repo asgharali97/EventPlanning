@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useEvents } from "../hooks/useEvent";
 import { useUIStore } from "@/store/uiStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,14 +16,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, MapPin, Clock, Users, Star } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  MapPin,
+  Clock,
+  Users,
+  Star,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "../lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-
+import BookEvent from "./BookEvent";
 const Event: React.FC = () => {
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const { eventFilter, setEventFilter } = useUIStore();
   const { data: events, isLoading, error } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -31,7 +39,7 @@ const Event: React.FC = () => {
 
   if (isLoading)
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border)]">
+      <div className="py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-[var(--background)]">
         {Array(6)
           .fill(0)
           .map((_, i) => (
@@ -63,191 +71,202 @@ const Event: React.FC = () => {
     );
 
   const handleEventClick = async (eventId: string) => {
-     navigate(`/event/${eventId}`);
-  }
+    navigate(`/event/${eventId}`);
+  };
+
+  const handleBookClick = (event) => {
+    console.log("clicked");
+    setSelectedEvent(event);
+    setBookingDialog(true);
+  };
   return (
-    <div className="satoshi-medium">
-      <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
-        <Select
-          value={eventFilter.type}
-          onValueChange={(value: "all" | "physical" | "online") =>
-            setEventFilter({ type: value })
-          }
-        >
-          <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent className="px-1 satoshi-regular">
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="physical">Physical</SelectItem>
-            <SelectItem value="online">Online</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Input
-          placeholder="Search events..."
-          value={eventFilter.search}
-          onChange={(e) => setEventFilter({ search: e.target.value })}
-          className="w-full sm:w-48 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]"
-        />
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full sm:w-48 justify-start text-left font-normal satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]",
-                !eventFilter.date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {eventFilter.date
-                ? format(new Date(eventFilter.date), "PPP")
-                : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-[var(--border)]">
-            <Calendar
-              mode="single"
-              selected={
-                eventFilter.date ? new Date(eventFilter.date) : undefined
-              }
-              onSelect={(date) =>
-                setEventFilter({
-                  date: date ? format(date, "yyyy-MM-dd") : undefined,
-                })
-              }
-              initialFocus
-              className="satoshi-regular"
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Select
-          value={eventFilter.sortByPrice || "none"}
-          onValueChange={(value: "asc" | "desc" | "none") =>
-            setEventFilter({ sortByPrice: value === "none" ? null : value })
-          }
-        >
-          <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
-            <SelectValue placeholder="Sort Price" />
-          </SelectTrigger>
-          <SelectContent className="px-1 satoshi-regular">
-            <SelectItem value="none">None</SelectItem>
-            <SelectItem value="asc">Low to High</SelectItem>
-            <SelectItem value="desc">High to Low</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border-b  border-[var(--border)] py-4">
-        {events?.map((event) => (
-          <article 
-            key={event._id} 
-            className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular  rounded-2xl"
-            onClick={() => handleEventClick(event._id)}
+    <>
+      <div className="satoshi-medium">
+        <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
+          <Select
+            value={eventFilter.type}
+            onValueChange={(value: "all" | "physical" | "online") =>
+              setEventFilter({ type: value })
+            }
           >
-            <div className="relative aspect-video overflow-hidden">
-              <img 
-                src={event.coverImage} 
-                alt={event.title}
-                className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl  group-hover:scale-105"
+            <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent className="px-1 satoshi-regular">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="physical">Physical</SelectItem>
+              <SelectItem value="online">Online</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Input
+            placeholder="Search events..."
+            value={eventFilter.search}
+            onChange={(e) => setEventFilter({ search: e.target.value })}
+            className="w-full sm:w-48 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]"
+          />
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full sm:w-48 justify-start text-left font-normal satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]",
+                  !eventFilter.date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {eventFilter.date
+                  ? format(new Date(eventFilter.date), "PPP")
+                  : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 border border-[var(--border)]">
+              <Calendar
+                mode="single"
+                selected={
+                  eventFilter.date ? new Date(eventFilter.date) : undefined
+                }
+                onSelect={(date) =>
+                  setEventFilter({
+                    date: date ? format(date, "yyyy-MM-dd") : undefined,
+                  })
+                }
+                initialFocus
+                className="satoshi-regular"
               />
-              <div className="absolute top-3 right-3 flex items-center gap-1  backdrop-blur-sm px-2 py-1 rounded-md">
-                <Star className="w-3.5 h-3.5 stroke-yellow-300 fill-yellow-300" />
-                <span className="text-white text-sm font-medium satoshi-medium">
-                  {event.rating || "4.5"}
-                </span>
-              </div>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]">
-                  {event.title}
-                </h3>
-                <div className="flex justify-between">
-                <p className="text-sm font-600 text-[var(--muted-foreground)] satoshi-regular">
-                  {event.category || "General"}
+            </PopoverContent>
+          </Popover>
+
+          <Select
+            value={eventFilter.sortByPrice || "none"}
+            onValueChange={(value: "asc" | "desc" | "none") =>
+              setEventFilter({ sortByPrice: value === "none" ? null : value })
+            }
+          >
+            <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+              <SelectValue placeholder="Sort Price" />
+            </SelectTrigger>
+            <SelectContent className="px-1 satoshi-regular">
+              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="asc">Low to High</SelectItem>
+              <SelectItem value="desc">High to Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 border-b  border-[var(--border)] py-4">
+          {events?.map((event) => (
+            <article
+              key={event._id}
+              className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular  rounded-2xl"
+            >
+              <section onClick={() => handleEventClick(event._id)}>
+                <div className="relative aspect-video overflow-hidden">
+                  <img
+                    src={event.coverImage}
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl  group-hover:scale-105"
+                  />
+                  <div className="absolute top-3 right-3 flex items-center gap-1  backdrop-blur-sm px-2 py-1 rounded-md">
+                    <Star className="w-3.5 h-3.5 stroke-yellow-300 fill-yellow-300" />
+                    <span className="text-white text-sm font-medium satoshi-medium">
+                      {event.rating || "4.5"}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]">
+                      {event.title}
+                    </h3>
+                    <div className="flex justify-between">
+                      <p className="text-sm font-600 text-[var(--muted-foreground)] satoshi-regular">
+                        {event.category || "General"}
+                      </p>
+                      <div>
+                        <span className="px-2 py-1 rounded-md text-xs font-medium satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]">
+                          {event.eventType === "online" ? "Online" : "Physical"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {event.description && (
+                    <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
+                      {event.description}
+                    </p>
+                  )}
+                  <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">
+                    <div className="flex items-start gap-2">
+                      <CalendarIcon className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                          Date
+                        </p>
+                        <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                          {format(new Date(event.date), "MMM dd, yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Clock className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                          Time
+                        </p>
+                        <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                          {event.time || "6:00 PM"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                          Location
+                        </p>
+                        <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                          {event.location || "Online"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Users className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
+                          Seats
+                        </p>
+                        <p className="text-sm satoshi-medium text-[var(--foreground)]">
+                          {event.seats} left
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <div className="p-4 space-y-3  flex items-center justify-between pt-1">
+                <p className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
+                  ${event.price}
                 </p>
-                <div>
-                <span className=
-                  "px-2 py-1 rounded-md text-xs font-medium satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
-                 >
-                  {event.eventType === 'online' ? 'Online' : 'Physical'}
-                </span>
-              </div>
-                </div>
-              </div>
-              {event.description && (
-                <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                  {event.description} 
-                </p>
-              )}
-              <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">
-                <div className="flex items-start gap-2">
-                  <CalendarIcon className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
-                      Date
-                    </p>
-                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
-                      {format(new Date(event.date), "MMM dd, yyyy")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Clock className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
-                      Time
-                    </p>
-                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
-                      {event.time || "6:00 PM"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
-                      Location
-                    </p>
-                    <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
-                      {event.location || "Online"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Users className="w-4 h-4 text-[var(--muted-foreground)] mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
-                      Seats
-                    </p>
-                    <p className="text-sm satoshi-medium text-[var(--foreground)]">
-                      {event.seats} left
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-1">
-                  <p className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
-                    ${event.price}
-                  </p>
                 <Button
                   size="sm"
-                  className="satoshi-medium shadow-sm hover:shadow-md transition-shadow"
+                  className="satoshi-medium shadow-sm hover:shadow-md transition-shadow cursor-pointer z-50"
                   onClick={() => {
-                    setSelectedEventId(event._id);
-                    useUIStore.getState().setBookingDialog(true);
+                    handleBookClick(event);
                   }}
                 >
                   Book Now
                 </Button>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
       </div>
-    </div>
+      <BookEvent
+        isOpen={isBookingDialogOpen}
+        onClose={() => setBookingDialog(false)}
+        event={selectedEvent}
+      />
+    </>
   );
 };
 

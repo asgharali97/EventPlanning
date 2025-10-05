@@ -15,6 +15,7 @@ const getAllEvents = asyncHandler(async (req: Request, res:Response) => {
 
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
+  console.log("event id ",eventId)
   const event = await Event.findById(eventId);  
   if (!event) {
     console.log("Event not found");

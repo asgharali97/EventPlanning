@@ -13,7 +13,10 @@ interface IEventBooking extends Document {
   bookingDate: Date;
   status: "confirmed" | "cancelled";
   numberOfTickets: number;
-  totalPrice: number;
+  originalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+  couponCode: string | null;
   paymentStatus: "paid" | "pending" | "failed";
   stripePaymentId?: string;
   reviewStatus?: "pending" | "approved" | "disputed";
@@ -47,14 +50,25 @@ const eventBookingSchema = new Schema<IEventBooking>(
       required: true,
       min: 1,
     },
-    totalPrice: {
+    originalAmount: { 
       type: Number,
-      required: true,
-      min: 0,
+      required: true 
+    },
+    discountAmount: {
+       type: Number,
+       default: 0 
+      },
+    finalAmount: {
+       type: Number,
+       required: true 
+    },
+    couponCode: {
+       type: String,
+       default: null 
     },
     paymentStatus: {
       type: String,
-      enum: ["paid", "pending", "failed"],
+      enum: ['pending', 'paid', 'failed', 'refunded'],
       default: "pending",
     },
     stripePaymentId: {

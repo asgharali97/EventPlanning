@@ -36,7 +36,7 @@ import reviewRoutes from './routes/review.route.js';
 
 app.use("/auth", authRoutes);
 app.use("/events", eventRoutes);
-app.use("/event-booking", eventBookingRoutes);
+app.use("/booking", eventBookingRoutes);
 app.use("/host", hostRoutes);
 app.use('/event', hostEventRoutes);
 app.use('/review', reviewRoutes);

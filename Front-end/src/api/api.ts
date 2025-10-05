@@ -16,16 +16,16 @@ const logout = async () => {
   return await api.post("/auth/logout", { withCredentials: true });
 };
 
-const paymentApi = async (eventId: string, numberOfTickets: number) => {
+const paymentApi = async (eventId: string, numberOfTickets: number, couponCode: string) => {
   return await api.post(
-    "event-booking",
-    { eventId, numberOfTickets },
+    "/booking",
+    { eventId, numberOfTickets, couponCode },
     { withCredentials: true }
-  );
+  )
 };
 
 const succesPay = async (session_id: string) => {
-  return await api.get(`event-booking/success/${session_id}`, {
+  return await api.get(`booking/success/${session_id}`, {
     withCredentials: true,
   });
 };

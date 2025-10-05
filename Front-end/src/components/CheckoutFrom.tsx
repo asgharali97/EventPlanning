@@ -66,7 +66,6 @@ const CheckoutForm = () => {
           borderRadius: "4px",
         }}
       >
-        <CardElement
           options={{
             style: {
               base: {

@@ -12,18 +12,17 @@ interface BookedEvent {
   status: string;
   totalPrice: Number;
   userId: string;
-  category: string,
-  coverImage: string,
-  description: string,
-  location: string,
-  price: Number,
-  seats: Number,
-  time: string,
-  title: string,
+  category: string;
+  coverImage: string;
+  description: string;
+  location: string;
+  price: Number;
+  seats: Number;
+  time: string;
+  title: string;
 }
 
 const BookedEvents = () => {
-  
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const session_id = params.get("session_id");
@@ -34,20 +33,30 @@ const BookedEvents = () => {
 
   useEffect(() => {
     function getBookedEvent() {
-      if(session_id){
+      if (session_id) {
         succesPay(session_id)
-        .then((res) => {
-          console.log(res)
-          setPaymentData(res.data.data.booking || []);
-        })
-        .catch((err) => {
-          console.log("error", err);
-        });
-        console.log(paymentData)
-      }else{
-         throw new Error("Payment failed. due to invalid session id.");
+          .then((res) => {
+            setPaymentData(res.data.data.booking || []);
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log("error", err);
+          });
+        console.log(paymentData);
+        if (paymentData.eventId) {
+          console.log(paymentData.eventId);
+          getEventById(paymentData.eventId._id)
+            .then((res) => {
+              setEventData(res.data.data || {});
+            })
+            .catch((err) => {
+              console.log("error", err);
+            });
+        }
+      } else {
+        throw new Error("Payment failed. due to invalid session id.");
       }
-      }
+    }
     const timer = setTimeout(() => {
       setIconAnimation(true);
     }, 100);
@@ -63,18 +72,6 @@ const BookedEvents = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (paymentData.eventId) {
-      getEventById(paymentData.eventId._id)
-        .then((res) => {
-          setEventData(res.data.data || {});
-        })
-        .catch((err) => {
-          console.log("error", err);
-        });
-    }
-  }, [paymentData.eventId]);
-
   return (
     <>
       <div className="w-full py-2 px-4 min-h-screen">
@@ -88,7 +85,6 @@ const BookedEvents = () => {
               }`}
             >
               <div className="relative flex flex-col items-center">
-    
                 <div className="relative w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
                   <CheckCircle className="w-8 h-8 text-white" strokeWidth={3} />
                 </div>

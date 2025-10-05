@@ -11,6 +11,7 @@ import mongoose from "mongoose";
 const addReview = asyncHandler(async (req: Request, res: Response) => {
   const { review, rating, eventId } = req.body;
   const userId = (req.user as any)?._id;
+  console.log(req.body)
   if (!userId) {
     throw new ApiError(401, "User not authenticated");
   }
@@ -19,7 +20,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Review, rating, and eventId are required");
   }
 
-  if (rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+  if (rating < 1 || rating > 5) {
     throw new ApiError(400, "Rating must be an integer between 1 and 5");
   }
 
@@ -48,19 +49,20 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
   if (!eventDate || new Date(eventDate) > currentDate) {
     throw new ApiError(400, "You can only review events that have already occurred");
   }
-
-  const existingReview = await Review.findOne({ userId, eventId });
-  if (existingReview) {
-    throw new ApiError(409, "You have already reviewed this event");
+ console.log('cross the confirm')
+ const existingReview = await Review.findOne({ userId, eventId });
+ if (existingReview) {
+   throw new ApiError(409, "You have already reviewed this event");
   }
-
+  console.log('cross the exits reveiw')
+  
   let uploadedImages: string[] = [];
   
   if (req.files && Array.isArray(req.files) && req.files.length > 0) {
     if (req.files.length > 4) {
       throw new ApiError(400, "Maximum 4 images allowed per review");
     }
-
+    
     for (const file of req.files) {
       try {
         const uploadResult = await uploadOnCloudinary(file.path);
@@ -76,6 +78,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
+  console.log('cross the upload')
   try {
     const newReview = await Review.create({
       review: review.trim(),
@@ -85,6 +88,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
       eventId
     });
 
+      console.log('cross the review new',newReview)
     const populatedReview = await Review.findById(newReview._id)
       .populate('userId', 'name email profileImage')
       .populate('eventId', 'title location date');
@@ -139,11 +143,10 @@ const getEventReviews = asyncHandler(async (req: Request, res: Response) => {
 
 
   const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
-  const sort = { [sortBy as string]: sortOrder === 'desc' ? -1 : 1 };
 
   const reviews = await Review.find({ eventId })
-    .populate('userId', 'name profileImage')
-    .sort(sort)
+    .populate('userId', 'name avatar')
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(parseInt(limit as string))
     .lean();

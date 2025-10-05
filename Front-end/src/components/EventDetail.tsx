@@ -9,63 +9,37 @@ import { useUIStore } from "@/store/uiStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUserById } from "@/hooks/useUser";
-
-const mockReviews = [
-  {
-    id: "1",
-    userName: "Sarah Johnson",
-    userAvatar: "https://i.pravatar.cc/150?img=1",
-    rating: 5,
-    comment:
-      "Amazing event! The organization was top-notch and I learned so much. Highly recommend!",
-    images: ["https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400"],
-    createdAt: "2 days ago",
-  },
-  {
-    id: "2",
-    userName: "Mike Chen",
-    userAvatar: "https://i.pravatar.cc/150?img=12",
-    rating: 4,
-    comment:
-      "Great experience overall. The venue was perfect and the host was very knowledgeable.",
-    images: [],
-    createdAt: "5 days ago",
-  },
-  {
-    id: "3",
-    userName: "Emma Davis",
-    userAvatar: "https://i.pravatar.cc/150?img=5",
-    rating: 5,
-    comment:
-      "Absolutely loved it! Met amazing people and had a fantastic time. Will definitely attend again.",
-    images: [
-      "https://images.unsplash.com/photo-1511578314322-379afb476865?w=400",
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
-    ],
-    createdAt: "1 week ago",
-  },
-];
+import BookEvent from "./BookEvent";
+import { useReviews,useAddReview } from "@/hooks/useReview";
 
 const EventDetail = () => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [reviewImages, setReviewImages] = useState<string[]>([]);
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { data: event, isLoading, error } = useEventById(eventId);
+  const { data: reviews = [], isLoading: reviewsLoading, error: reviewError } = useReviews(eventId);
+  console.log("reveiw",reviews)
+  const { mutate: addReview, isLoading: isSubmitting } = useAddReview();
+  
   const hostId = event?.hostId;
-  const { data:host, isLoading:hostLoading, error:hostError } = useUserById(hostId)
-  console.log(host)
-  const { setBookingDialog } = useUIStore();
+  const { isBookingDialogOpen, setBookingDialog } = useUIStore();
+  const {
+    data: host,
+    isLoading: hostLoading,
+    error: hostError,
+  } = useUserById(hostId);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  if (isLoading && hostLoading) {
+  if (isLoading || hostLoading || reviewsLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
         <Skeleton className="h-10 w-24" />
-
         <Skeleton className="w-full aspect-video rounded-2xl" />
-
         <div className="space-y-4">
           <Skeleton className="h-10 w-3/4" />
           <Skeleton className="h-6 w-1/4" />
@@ -76,7 +50,7 @@ const EventDetail = () => {
     );
   }
 
-  if (error && hostError) {
+  if (error || hostError || reviewError) {
     return (
       <div className="max-w-5xl mx-auto py-8">
         <Alert variant="destructive">
@@ -123,27 +97,56 @@ const EventDetail = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newImages = Array.from(files).map((file) =>
-        URL.createObjectURL(file)
-      );
-      setReviewImages([...reviewImages, ...newImages]);
+      const filesArray = Array.from(files);
+      
+      const remainingSlots = 4 - reviewImages.length;
+      const filesToAdd = filesArray.slice(0, remainingSlots);
+      
+      if (filesArray.length > remainingSlots) {
+        alert(`You can only upload ${remainingSlots} more image(s). Maximum 4 images allowed.`);
+      }
+      
+      setReviewImages([...reviewImages, ...filesToAdd]);
+      
+      const newPreviews = filesToAdd.map((file) => URL.createObjectURL(file));
+      setPreviewImages([...previewImages, ...newPreviews]);
     }
   };
 
   const removeImage = (index: number) => {
+    URL.revokeObjectURL(previewImages[index]);
+    
     setReviewImages(reviewImages.filter((_, i) => i !== index));
+    setPreviewImages(previewImages.filter((_, i) => i !== index));
   };
 
   const handleSubmitReview = () => {
-    console.log({
-      rating,
-      reviewText,
-      images: reviewImages,
-    });
+    if (!rating || !reviewText.trim()) {
+      return;
+    }
 
-    setRating(0);
-    setReviewText("");
-    setReviewImages([]);
+    addReview(
+      {
+        eventId: eventId!,
+        review: reviewText,
+        rating,
+        images: reviewImages,
+      },
+      {
+        onSuccess: () => {
+          setRating(0);
+          setReviewText("");
+          setReviewImages([]);
+          previewImages.forEach(url => URL.revokeObjectURL(url));
+          setPreviewImages([]);
+        },
+      }
+    );
+  };
+
+  const handleBookClick = (event) => {
+    setSelectedEvent(event);
+    setBookingDialog(true);
   };
 
   return (
@@ -160,7 +163,12 @@ const EventDetail = () => {
             <h1 className="satoshi-bold text-3xl font-bold text-[var(--foreground)]">
               {event.title}
             </h1>
-            <Button className="cursor-pointer">Book Now</Button>
+            <Button
+              className="cursor-pointer"
+              onClick={() => handleBookClick(event)}
+            >
+              Book Now
+            </Button>
           </div>
           <Badge
             variant={"secondary"}
@@ -178,7 +186,6 @@ const EventDetail = () => {
             <h3>By {host?.name}</h3>
           </div>
 
-          {/* Location and Seats */}
           <div className="mt-8 flex gap-4 items-center justify-between">
             <div>
               <h4 className="text-xl font-bold">Location</h4>
@@ -234,67 +241,82 @@ const EventDetail = () => {
             <div className="flex items-center justify-between mb-6">
               <h4 className="text-2xl font-bold">Reviews</h4>
               <p className="text-[var(--secondary)]">
-                {mockReviews.length} reviews
+                {reviews.reviews.length} review{reviews.reviews.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <div className="space-y-6">
-              {mockReviews.map((review) => (
-                <div key={review.id} className="space-y-3">
-                  {/* User Info and Rating */}
-                  <div className="flex items-start justify-between">
-                    <div className="flex gap-3 items-start">
-                      <img
-                        src={review.userAvatar}
-                        alt={review.userName}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div>
-                        <h5 className="font-semibold text-[var(--foreground)]">
-                          {review.userName}
-                        </h5>
-                        <p className="text-sm text-[var(--secondary)]">
-                          {review.createdAt}
-                        </p>
+
+            {reviewsLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : reviews.length === 0 ? (
+              <p className="text-[var(--secondary)] text-center py-8">
+                No reviews yet. Be the first to review this event!
+              </p>
+            ) : (
+              <div className="space-y-6">
+                {reviews.reviews.map((review) => (
+                  <div key={review._id} className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-3 items-start">
+                        <img
+                          src={review.userId?.avatar || "https://i.pravatar.cc/150?img=0"}
+                          alt={review.userId?.name || "User"}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <h5 className="font-semibold text-[var(--foreground)]">
+                            {review.userId?.name || "Anonymous User"}
+                          </h5>
+                          <p className="text-sm text-[var(--secondary)]">
+                            {new Date(review.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-4 h-4 ${
+                              star <= review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-[var(--border)]"
+                            }`}
+                          />
+                        ))}
                       </div>
                     </div>
 
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-4 h-4 ${
-                            star <= review.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-[var(--border)]"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <p className="text-[var(--foreground)] leading-relaxed">
+                      {review.review}
+                    </p>
+
+                    {review.images && review.images.length > 0 && (
+                      <div className="flex gap-2 mt-3">
+                        {review.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Review image ${index + 1}`}
+                            className="w-24 h-24 object-cover rounded-lg border border-[var(--border)]"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {review._id !== reviews.reviews[reviews.reviews.length - 1]._id && (
+                      <div className="border-t border-[var(--border)] pt-6" />
+                    )}
                   </div>
-
-                  <p className="text-[var(--foreground)] leading-relaxed">
-                    {review.comment}
-                  </p>
-
-                  {review.images.length > 0 && (
-                    <div className="flex gap-2 mt-3">
-                      {review.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`Review image ${index + 1}`}
-                          className="w-24 h-24 object-cover rounded-lg border border-[var(--border)]"
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {review.id !== mockReviews[mockReviews.length - 1].id && (
-                    <div className="border-t border-[var(--border)] pt-6" />
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-8 -mx-6 px-8 pb-6">
@@ -340,12 +362,12 @@ const EventDetail = () => {
 
             <div className="mb-4">
               <p className="text-sm text-[var(--secondary)] mb-2">
-                Add Photos (Optional)
+                Add Photos (Optional) - Max 4 images
               </p>
 
-              {reviewImages.length > 0 && (
+              {previewImages.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
-                  {reviewImages.map((image, index) => (
+                  {previewImages.map((image, index) => (
                     <div key={index} className="relative">
                       <img
                         src={image}
@@ -364,29 +386,38 @@ const EventDetail = () => {
                 </div>
               )}
 
-              <label className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-[var(--accent)] transition-colors">
-                <Upload className="w-4 h-4" />
-                <span className="text-sm satoshi-regular">Upload Photos</span>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </label>
+              {reviewImages.length < 4 && (
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-[var(--accent)] transition-colors">
+                  <Upload className="w-4 h-4" />
+                  <span className="text-sm satoshi-regular">
+                    Upload Photos ({reviewImages.length}/4)
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
 
             <Button
               onClick={handleSubmitReview}
-              disabled={!rating || !reviewText.trim()}
+              disabled={!rating || !reviewText.trim() || isSubmitting} 
               className="w-full satoshi-medium"
             >
-              Submit Review
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </Button>
           </div>
         </div>
       </div>
+      <BookEvent
+        isOpen={isBookingDialogOpen}
+        onClose={() => setBookingDialog(false)}
+        event={selectedEvent}
+      />
     </>
   );
 };

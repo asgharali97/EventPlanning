@@ -37,24 +37,21 @@ const Navbar = () => {
         </div>
 
         <nav className="flex items-center gap-12">
-          <a
-            href="#discover"
+          <Link to="/events"
             className={`${isHomePage ? "text-[var(--primary-foreground)]" : "text-[var(--foreground)]" } text-lg font-medium`}
           >
             Discover
-          </a>
-          <a
-            href="#bookings"
+          </Link>
+          <Link to="/bookings"
             className={`${isHomePage ? "text-[var(--primary-foreground)]" : "text-[var(--foreground)]" } text-lg font-medium`}
           >
             My bookings
-          </a>
-          <a
-            href="#host"
+          </Link>
+          <Link to="/"
             className={`${isHomePage ? "text-[var(--primary-foreground)]" : "text-[var(--foreground)]" } text-lg font-medium`}
           >
             Host Event
-          </a>
+          </Link>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -98,14 +95,13 @@ const Navbar = () => {
           ) : (
             <Link
               to="/signin"
-              className="text-[var(--primary-foreground)] px-4 py-2 rounded-md"
+              className={`${isHomePage ? 'text-[var(--primary-foreground)]' : "text-[var(--foreground)]"} px-4 py-2 rounded-md`}
             >
               Sign In
             </Link>
           )}
         </div>
       </header>
-        {/* <div className={`w-full border-b ${isHomePage ? "border-[var(--popover)]" : "border-[var(--foreground)]"}`}></div> */}
     </>
   );
 };
