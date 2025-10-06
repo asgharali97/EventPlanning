@@ -104,10 +104,25 @@ export const useReviewEligibility = (eventId: string | undefined, userId: string
   return useQuery<ReviewEligibility>({
     queryKey: ['reviewEligibility', eventId, userId],
     queryFn: async () => {
-      const { data } = await axios.get(`/review/eligibility/${eventId}`);
-      return data.data;
+
+      try {
+        const response = await axios.get(`/review/eligibility/${eventId}`);
+        const eligibleData = response.data?.data || response.data;
+
+        if (!eligibleData || typeof eligibleData !== "object") {
+          throw new Error("Invalid eligibility data received");
+        }
+        return eligibleData;
+      } catch (error: any) {
+        
+        if (error.response?.status === 404) {
+          throw new Error("Event not found");
+        }
+        throw error;
+      }
     },
     enabled: !!eventId && !!userId,
     retry: false,
+    staleTime: 1000 * 60 * 5,
   });
 };

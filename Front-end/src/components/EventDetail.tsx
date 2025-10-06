@@ -23,12 +23,12 @@ const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  
   const { data: event, isLoading, error } = useEventById(eventId);
   const { data: reviews = [], isLoading: reviewsLoading, error: reviewError } = useReviews(eventId);
+  console.log(reviews)
   const { mutate: addReview, isLoading: isSubmitting } = useAddReview();
-  const { data: eligibility, isLoading: eligibilityLoading } = useReviewEligibility(eventId, user?._id);
-  
+  const { data: eligibility, isLoading: eligibilityLoading } = useReviewEligibility(eventId, user.data?._id);
+  console.log(eligibility)
   const hostId = event?.hostId;
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const {
@@ -37,7 +37,7 @@ const EventDetail = () => {
     error: hostError,
   } = useUserById(hostId);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
+ 
   if (isLoading || hostLoading || reviewsLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -425,7 +425,7 @@ const EventDetail = () => {
                 <Button
                   onClick={handleSubmitReview}
                   disabled={!rating || !reviewText.trim() || isSubmitting}
-                  className="w-full satoshi-medium"
+                  className="w-full satoshi-medium cursor-pointer"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Review"}
                 </Button>

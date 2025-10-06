@@ -11,7 +11,6 @@ import mongoose from "mongoose";
 const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = (req.user as any)?._id;
   const { eventId } = req.params;
-
   const event = await Event.findById(eventId);
   if (!event) {
     throw new ApiError(404, "Event not found");
@@ -20,7 +19,7 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
   const eventDate = new Date(event.date);
   const now = new Date();
   const hasEventPassed = eventDate < now;
-
+  
   if (!hasEventPassed) {
     return res.status(200).json(
       new ApiResponse(200, "Eligibility check", {
@@ -30,7 +29,7 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
       })
     );
   }
-
+  
   const booking = await EventBooking.findOne({
     userId,
     eventId,
@@ -46,9 +45,8 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
       })
     );
   }
-
   const existingReview = await Review.findOne({ userId, eventId });
-
+  
   if (existingReview) {
     return res.status(200).json(
       new ApiResponse(200, "Eligibility check", {
@@ -58,7 +56,8 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
       })
     );
   }
-
+  
+  console.log('all done ')
   res.status(200).json(
     new ApiResponse(200, "Eligibility check", {
       canReview: true,
@@ -109,12 +108,10 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
   if (!eventDate || new Date(eventDate) > currentDate) {
     throw new ApiError(400, "You can only review events that have already occurred");
   }
- console.log('cross the confirm')
  const existingReview = await Review.findOne({ userId, eventId });
  if (existingReview) {
    throw new ApiError(409, "You have already reviewed this event");
   }
-  console.log('cross the exits reveiw')
   
   let uploadedImages: string[] = [];
   
@@ -138,7 +135,6 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  console.log('cross the upload')
   try {
     const newReview = await Review.create({
       review: review.trim(),
@@ -147,11 +143,8 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
       userId,
       eventId
     });
-
-      console.log('cross the review new',newReview)
     const populatedReview = await Review.findById(newReview._id)
-      .populate('userId', 'name email profileImage')
-      .populate('eventId', 'title location date');
+      .populate('userId', 'name email avatar')
 
     res.status(201).json(
       new ApiResponse(201, "Review created successfully", populatedReview)
