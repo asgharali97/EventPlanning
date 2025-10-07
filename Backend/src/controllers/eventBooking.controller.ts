@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Event from "../models/event.model.js";
 import Stripe from "stripe";
 import EventBooking from "../models/eventBooking.model.js";
-import { IUser } from "models/user.model.js";
+import { IUser } from "../models/user.model.js";
 import { generateAndSendTickets } from "./ticket.controller.js";
 import mongoose from 'mongoose';
 import Coupon from '../models/coupon.model.js';

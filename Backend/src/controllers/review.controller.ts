@@ -7,6 +7,11 @@ import EventBooking from "../models/eventBooking.model.js";
 import Review from "../models/review.model.js";
 import Event from "../models/event.model.js"; 
 import mongoose from "mongoose";
+import {IUser} from '../models/user.model.js'
+
+interface AuthRequest extends Request {
+  user?: IUser;
+}
 
 const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = (req.user as any)?._id;
