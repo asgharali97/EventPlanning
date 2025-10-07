@@ -246,7 +246,7 @@ const successPay = asyncHandler(async (req: AuthRequest, res: Response) => {
 
 const getBookedEvents = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = (req.user as any)?._id;
-  const events = await EventBooking.find({ userId });
+  const events = await EventBooking.find({ userId }).populate("eventId","title date time location coverImage");
   if (!events) {
     throw new ApiError(404, "No events found");
   }

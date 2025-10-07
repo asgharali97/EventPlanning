@@ -45,7 +45,7 @@ const router = createBrowserRouter([
         element: <BookedEvents />,
       },
       {
-        path:"Allbooked-events",
+        path:"my-bookings",
         element:<AllBookedEvents/>
       },
       {

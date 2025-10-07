@@ -1,188 +1,283 @@
 import React, { useState, useEffect } from "react";
 import { succesPay, getEventById } from "../api/api";
-import { useLocation } from "react-router-dom";
-import { CheckCircle, Calendar, Clock, MapPin, Users } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CheckCircle, Calendar, Clock, MapPin, Users, ArrowLeft } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface BookedEvent {
+interface PaymentData {
   _id: string;
   bookingDate: string;
-  eventId: string;
-  numberOfTickets: Number;
+  eventId: {
+    _id: string;
+    title?: string;
+    coverImage?: string;
+    category?: string;
+    location?: string;
+    date?: string;
+    time?: string;
+  };
+  numberOfTickets: number;
   paymentStatus: string;
   status: string;
-  totalPrice: Number;
+  finalAmount: number;
   userId: string;
+}
+
+interface EventData {
+  _id: string;
+  title: string;
   category: string;
   coverImage: string;
   description: string;
   location: string;
-  price: Number;
-  seats: Number;
+  price: number;
+  seats: number;
+  date: string;
   time: string;
-  title: string;
 }
 
 const BookedEvents = () => {
   const { search } = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(search);
   const session_id = params.get("session_id");
-  const [eventData, setEventData] = useState<BookedEvent[]>([]);
-  const [paymentData, setPaymentData] = useState([]);
+  
+  const [eventData, setEventData] = useState<EventData | null>(null);
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showSuccessIcon, setShowSuccessIcon] = useState(true);
   const [iconAnimation, setIconAnimation] = useState(false);
 
   useEffect(() => {
-    function getBookedEvent() {
-      if (session_id) {
-        succesPay(session_id)
-          .then((res) => {
-            setPaymentData(res.data.data.booking || []);
-            console.log(res);
-          })
-          .catch((err) => {
-            console.log("error", err);
-          });
-        console.log(paymentData);
-        if (paymentData.eventId) {
-          console.log(paymentData.eventId);
-          getEventById(paymentData.eventId._id)
-            .then((res) => {
-              setEventData(res.data.data || {});
-            })
-            .catch((err) => {
-              console.log("error", err);
-            });
-        }
-      } else {
-        throw new Error("Payment failed. due to invalid session id.");
-      }
+    if (!session_id) {
+      setError("Invalid session. Payment verification failed.");
+      setIsLoading(false);
+      return;
     }
-    const timer = setTimeout(() => {
-      setIconAnimation(true);
-    }, 100);
 
-    const hideTimer = setTimeout(() => {
-      setShowSuccessIcon(false);
-    }, 3000);
+    succesPay(session_id)
+      .then((res) => {
+        const booking = res.data.data.booking;
+        setPaymentData(booking);
+        console.log("Payment Data:", booking);
+      })
+      .catch((err) => {
+        console.error("Payment error:", err);
+        setError("Failed to verify payment. Please contact support.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
-    getBookedEvent();
+    const timer = setTimeout(() => setIconAnimation(true), 100);
+    const hideTimer = setTimeout(() => setShowSuccessIcon(false), 3000);
+
     return () => {
       clearTimeout(timer);
       clearTimeout(hideTimer);
     };
-  }, []);
+  }, [session_id]);
+
+  useEffect(() => {
+    if (paymentData?.eventId?._id) {
+      console.log("Fetching event with ID:", paymentData.eventId._id);
+      
+      getEventById(paymentData.eventId._id)
+        .then((res) => {
+          const event = res.data.data;
+          setEventData(event);
+          console.log("Event Data:", event);
+        })
+        .catch((err) => {
+          console.error("Event fetch error:", err);
+          setEventData({
+            _id: paymentData.eventId._id,
+            title: paymentData.eventId.title || "Event",
+            category: paymentData.eventId.category || "General",
+            coverImage: paymentData.eventId.coverImage || "",
+            location: paymentData.eventId.location || "TBA",
+            date: paymentData.eventId.date || "",
+            time: paymentData.eventId.time || "TBA",
+            description: "",
+            price: 0,
+            seats: 0,
+          });
+        });
+    }
+  }, [paymentData]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-4xl min-h-screen py-8 px-6 border-r border-l border-[var(--border)]">
+        <Skeleton className="h-10 w-32 mb-8" />
+        <Skeleton className="w-full h-64 rounded-lg mb-6" />
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !paymentData) {
+    return (
+      <div className="container mx-auto max-w-4xl min-h-screen py-8 px-6 border-r border-l border-[var(--border)]">
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error || "Failed to load booking details"}</AlertDescription>
+        </Alert>
+        <Button onClick={() => navigate("/events")} variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="w-full py-2 px-4 min-h-screen">
-        <div className="flex flex-col justify-center items-center mx-auto gap-4 w-full h-full py-12 px-8">
-          {showSuccessIcon && (
-            <div
-              className={`mb-6 transform transition-all duration-1000 ease-out ${
-                iconAnimation
-                  ? "scale-100 opacity-100 translate-y-0"
-                  : "scale-50 opacity-0 translate-y-10"
-              }`}
-            >
-              <div className="relative flex flex-col items-center">
-                <div className="relative w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <CheckCircle className="w-8 h-8 text-white" strokeWidth={3} />
-                </div>
+    <div className="container mx-auto max-w-4xl min-h-screen py-8 px-6 border-r border-l border-[var(--border)] satoshi-medium text-[var(--foreground)]">
 
-                <div className="text-center mt-3">
-                  <h2 className="text-xl font-bold text-white mb-1">
-                    Payment Successful!
-                  </h2>
-                  <p className="text-gray-400 text-sm">
-                    Your tickets have been confirmed
-                  </p>
-                </div>
+      {showSuccessIcon && (
+        <div
+          className={`flex flex-col items-center mb-8 transform transition-all duration-1000 ease-out ${
+            iconAnimation
+              ? "scale-100 opacity-100 translate-y-0"
+              : "scale-50 opacity-0 translate-y-10"
+          }`}
+        >
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+            <CheckCircle className="w-10 h-10 text-white" strokeWidth={3} />
+          </div>
+          <h2 className="text-2xl satoshi-bold text-[var(--foreground)] mb-2">
+            Payment Successful!
+          </h2>
+          <p className="text-[var(--secondary)]">
+            Your tickets have been confirmed
+          </p>
+        </div>
+      )}
+
+      <div className="border border-[var(--border)] rounded-lg overflow-hidden">
+        {eventData?.coverImage && (
+          <div className="relative">
+            <img
+              src={eventData.coverImage}
+              alt={eventData.title}
+              className="w-full h-64 object-cover"
+            />
+            <div className="absolute top-4 left-4">
+              <Badge className="bg-[var(--foreground)] text-[var(--popover)]">
+                {eventData.category}
+              </Badge>
+            </div>
+            {paymentData.paymentStatus === "paid" && (
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-green-600 text-white flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Paid
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="p-6 border-t border-[var(--border)]">
+          <h1 className="satoshi-bold text-2xl mb-6 text-[var(--foreground)]">
+            {eventData?.title || "Event Booked"}
+          </h1>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-[var(--secondary)]" />
+              <div>
+                <p className="text-xs text-[var(--secondary)]">Date</p>
+                <p className="text-[var(--foreground)]">
+                  {eventData?.date
+                    ? new Date(eventData.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    : "TBA"}
+                </p>
               </div>
             </div>
-          )}
 
-          <div className="w-[25rem] min-h-full bg-gray-900 border border-gray-800 rounded-sm shadow-lg overflow-hidden hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 mt-12">
-            <div className="relative">
-              <img
-                src={eventData.coverImage}
-                alt={eventData.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute top-3 left-3">
-                <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {eventData.category}
-                </span>
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-[var(--secondary)]" />
+              <div>
+                <p className="text-xs text-[var(--secondary)]">Time</p>
+                <p className="text-[var(--foreground)]">
+                  {eventData?.time || "TBA"}
+                </p>
               </div>
-              {paymentData.paymentStatus === "paid" && (
-                <div className="absolute top-3 right-3">
-                  <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" />
-                    Paid
-                  </span>
-                </div>
-              )}
             </div>
 
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-white mb-3">
-                {eventData.title}
-              </h3>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-gray-300 text-sm">
-                  <Calendar className="w-4 h-4 mr-2 text-violet-400" />
-                  <span>{new Date(eventData.date).toLocaleDateString()}</span>
-                </div>
-
-                <div className="flex items-center text-gray-300 text-sm">
-                  <Clock className="w-4 h-4 mr-2 text-violet-400" />
-                  <span>{eventData.time}</span>
-                </div>
-
-                <div className="flex items-center text-gray-300 text-sm">
-                  <MapPin className="w-4 h-4 mr-2 text-violet-400" />
-                  <span>{eventData.location}</span>
-                </div>
-
-                <div className="flex items-center text-gray-300 text-sm">
-                  <Users className="w-4 h-4 mr-2 text-violet-400" />
-                  <span>
-                    {paymentData.numberOfTickets}{" "}
-                    {paymentData.numberOfTickets === 1 ? "Ticket" : "Tickets"}
-                  </span>
-                </div>
+            <div className="flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-[var(--secondary)]" />
+              <div>
+                <p className="text-xs text-[var(--secondary)]">Location</p>
+                <p className="text-[var(--foreground)]">
+                  {eventData?.location || "TBA"}
+                </p>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-right">
-                  <p className="text-gray-400 text-sm">Total Price</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${paymentData.totalPrice}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-[var(--secondary)]" />
+              <div>
+                <p className="text-xs text-[var(--secondary)]">Tickets</p>
+                <p className="text-[var(--foreground)]">
+                  {paymentData.numberOfTickets}{" "}
+                  {paymentData.numberOfTickets === 1 ? "Ticket" : "Tickets"}
+                </p>
               </div>
-
-              <button
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-sm transition-colors duration-200 flex items-center justify-center gap-2"
-                disabled={paymentData.paymentStatus === "paid"}
-              >
-                <CheckCircle className="w-5 h-5" />
-                {paymentData.paymentStatus === "paid"
-                  ? "Payment Completed"
-                  : "Book Now"}
-              </button>
             </div>
           </div>
-
-          <div className="mt-6 text-center text-gray-400 text-sm max-w-md">
-            <p>
-              A confirmation email has been sent to your registered email
-              address. Please keep this for your records.
-            </p>
+          <div className="border-t border-[var(--border)] pt-4 mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[var(--secondary)]">Total Amount Paid</span>
+              <span className="satoshi-bold text-2xl text-[var(--foreground)]">
+                ${paymentData.finalAmount}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 py-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <span className="satoshi-medium text-green-500">
+              Booking Confirmed
+            </span>
           </div>
         </div>
       </div>
-    </>
+
+      <div className="mt-6 p-4 bg-[var(--accent)] border border-[var(--border)] rounded-lg">
+        <p className="text-sm text-[var(--secondary)] text-center">
+          A confirmation email has been sent to your registered email address.
+          Please keep this for your records.
+        </p>
+      </div>
+      <div className="flex gap-4 mt-6">
+        <Button
+          onClick={() => navigate("/events")}
+          variant="outline"
+          className="flex-1 cursor-pointer"
+        >
+          Browse More Events
+        </Button>
+        <Button
+          onClick={() => navigate("/my-bookings")}
+          className="flex-1-cursor-pointer"
+        >
+          View All Bookings
+        </Button>
+      </div>
+    </div>
   );
 };
 

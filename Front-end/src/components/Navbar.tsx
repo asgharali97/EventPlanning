@@ -42,7 +42,7 @@ const Navbar = () => {
           >
             Discover
           </Link>
-          <Link to="/bookings"
+          <Link to="/my-bookings"
             className={`${isHomePage ? "text-[var(--primary-foreground)]" : "text-[var(--foreground)]" } text-lg font-medium`}
           >
             My bookings

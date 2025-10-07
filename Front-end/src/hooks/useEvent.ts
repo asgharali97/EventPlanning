@@ -150,4 +150,56 @@ export const useEventById = (eventId: string | undefined) => {
 
   return query;
 };
+
+export const useGetBookedEvent = (userId:string) => {
+  const { addToast } = useUIStore();
+
+  const query = useQuery<Event>({
+    queryKey: ['event', userId],
+    
+    queryFn: async () => {
+      try {
+        const response = await axios.get(`/booking/get-booked-events`);
+        
+        const eventData = response.data?.data || response.data;
+        if (!eventData || typeof eventData !== 'object') {
+          console.error('Invalid event response format:', response.data);
+          throw new Error('Invalid event data received');
+        }
+        
+        return eventData as Event;
+      } catch (error: any) {
+        console.error('Fetch Event By ID Error:', error);
+        if (error.response?.status === 404) {
+          throw new Error('Event not found');
+        } else if (error.response?.status === 403) {
+          throw new Error('You do not have permission to view this event');
+        }
+        
+        throw error;
+      }
+    },
+    enabled: !!userId,
+    
+    staleTime: 5 * 60 * 1000,
+    
+    gcTime: 10 * 60 * 1000,
+    
+    retry: 2,
+    
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = query.error instanceof Error 
+        ? query.error.message 
+        : 'Failed to fetch event details';
+      
+      addToast(errorMessage, 'destructive');
+    }
+  }, [query.error, addToast]);
+
+  return query;
+};
 export type { Event };
