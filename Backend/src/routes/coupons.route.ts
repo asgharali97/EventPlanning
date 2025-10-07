@@ -6,10 +6,10 @@ import {
   getEventCoupons,
   updateCoupon,
   validateCoupon,
-} from "controllers/coupon.controller.js";
+} from "../controllers/coupon.controller.js";
 import { Router } from "express";
-import isHost from "middleware/isHost.js";
-import verifyJWT from "middleware/jwtVerify.js";
+import isHost from "../middleware/isHost.js";
+import verifyJWT from "../middleware/jwtVerify.js";
 
 const router = Router();
 

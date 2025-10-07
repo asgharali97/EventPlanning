@@ -156,8 +156,6 @@ const sendTicketEmail = async (
   qrCodeDataURL: string
 ): Promise<void> => {
   const { event, user, ticketNumber } = ticketData;
-  console.log('ticket Number is ::' ,  ticketNumber);
-  console.log('eventData in ticket',event)
   try {
     // const alreadySent = await Ticket.findOne({ ticketNumber });
     // if (alreadySent) {
@@ -253,12 +251,9 @@ const sendTicketEmail = async (
 const generateAndSendTickets = async (bookingId: string): Promise<void> => {
   let ticketNumber:string = ''
   try {
-    console.log('genrate Ticket and send')
     const booking = await EventBooking.findById(bookingId)
     .populate('eventId')
     .populate('userId', 'name email');
-    console.log("booking data from the genrate",  booking)
-    console.log('booking got')
     if (!booking) {
       throw new ApiError(404, "Booking not found");
     }
@@ -267,7 +262,6 @@ const generateAndSendTickets = async (bookingId: string): Promise<void> => {
       throw new ApiError(400, "Payment not completed");
     }
     const event = await Event.findById(booking.eventId._id)
-    console.log("event data from the genrate",  event)
     for (let i = 0; i < booking.numberOfTickets; i++) {
       ticketNumber = `TK-${uuidv4().substring(0, 8).toUpperCase()}`;
       const qrData = JSON.stringify({

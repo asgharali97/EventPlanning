@@ -1,12 +1,12 @@
 import express, { Router } from "express";
 import verifyJWT from "../middleware/jwtVerify.js";
-import upload from "middleware/mutler.js";
-import isHost from "middleware/isHost.js";
+import upload from "../middleware/mutler.js";
+import isHost from "../middleware/isHost.js";
 import {
   createEvent,
   deleteEvent,
   updateEvent,
-} from "controllers/hostEvent.controller.js";
+} from "../controllers/hostEvent.controller.js";
 
 
 const router = Router();

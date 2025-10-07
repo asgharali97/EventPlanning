@@ -4,8 +4,8 @@ import Event from "../models/event.model.js";
 import EventBooking from '../models/eventBooking.model.js'
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary, deleteFromCloudinary } from "utils/cloudaniry.js";
-import User from "models/user.model.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudaniry.js";
+import User from "../models/user.model.js";
 
 const createEvent = asyncHandler(async (req: Request, res: Response) => {
   const {
@@ -93,8 +93,6 @@ const createEvent = asyncHandler(async (req: Request, res: Response) => {
 
 const updateEvent = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
-  console.log('call')
-  console.log(req.body)
   const {
     title,
     price,
@@ -108,7 +106,6 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
     onlineDetails,
     tags,
   } = req.body;
-  console.log(title)
   const userId = (req as any).user?._id;
 
   if (!eventId) {
@@ -139,7 +136,6 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
   const updateData: any = {};
 
   if (title !== undefined) {
-    console.log('titel is undefined')
     if (!title.trim()) {
       throw new ApiError(400, "Title cannot be empty");
     }

@@ -24,7 +24,6 @@ const getStripeInstance = () => {
 const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
   const stripe = getStripeInstance();
   const { numberOfTickets, eventId, couponCode } = req.body;
-  console.log(numberOfTickets,eventId,couponCode);
   
   const userId = (req as any).user?._id;
 

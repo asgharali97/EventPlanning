@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import verifyJWT from "../middleware/jwtVerify.js";
-import upload from "middleware/mutler.js";
+import upload from "../middleware/mutler.js";
 import {
   getEventReviews,
   addReview,
@@ -8,7 +8,7 @@ import {
   getUserReviews,
   updateReview,
   checkReviewEligibility,
-} from "controllers/review.controller.js";
+} from "../controllers/review.controller.js";
 const router = Router();
 
 router.get("/:eventId", getEventReviews);

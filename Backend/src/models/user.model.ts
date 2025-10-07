@@ -25,9 +25,10 @@ export interface IUser extends Document {
   depositHeld?: number;
   createdAt: Date;
   updatedAt: Date;
-  generateAccessToken: () => string;
-  generateRefreshToken: () => string;
+  gernateAccessToken: () => string;
+  gernateRefreshToken: () => string;
 }
+
 
 const UserSchema = new Schema(
   {
@@ -78,23 +79,31 @@ const UserSchema = new Schema(
 );
 
 UserSchema.methods.gernateAccessToken = function () {
+  const secret = process.env.ACCESS_TOKEN_SECRET
+  if (!secret) {
+    throw new Error("ACCESS_TOKEN_SECRET is not defined");
+  }
   return jwt.sign(
     {
       _id: this._id,
       email: this.email,
     },
-    process.env.ACCESS_TOKEN_SECRET || "ahd3m4#jakorau8mcx0ir*9uroq&il",
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
+    secret,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN as any  }
   );
 };
 
 UserSchema.methods.gernateRefreshToken = function () {
+  const secret = process.env.REFRESH_TOKEN_SECRET 
+  if (!secret) {
+    throw new Error("REFRESH_TOKEN_SECRET is not defined");
+  }
   return jwt.sign(
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SECRET || "il$65RIDOS780%dap898WQIMZPOPI87",
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
+    secret,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN as any  }
   );
 };
 export type UserDoc = HydratedDocument<InferSchemaType<typeof UserSchema>>;

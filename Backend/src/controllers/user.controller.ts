@@ -35,7 +35,6 @@ const gernateAccessTokenAndRefreshToken = async (userId: string) => {
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
   } catch (error) {
-    console.log("genrating accesstoken error::", error);
     throw new ApiError(
       500,
       "Something went wrong While generate accessToken and refreshToken"
@@ -83,7 +82,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const { accessToken, refreshToken } = await gernateAccessTokenAndRefreshToken(
-    user._id
+    (user as any)._id
   );
 
   if (!accessToken && !refreshToken) {
@@ -102,7 +101,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req?.user._id);
+  const user = await User.findById((req as any).user._id);
 
   if (!user) {
     throw new ApiError(401, "Unauthorized, No user found");
@@ -110,7 +109,6 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (user?.role === "host") {
     throw new ApiError(400, "already a host");
   }
-  console.log("call the controller of host");
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount: 100,
@@ -142,7 +140,7 @@ const becomeHost = asyncHandler(async (req: AuthRequest, res: Response) => {
 const verifyHostPayment = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const { paymentIntentId } = req.body;
-    const user = await User.findById(req?.user._id);
+    const user = await User.findById((req as any).user._id);
 
     if (!user) {
       throw new ApiError(401, "Unauthorized, No user found");
@@ -177,20 +175,18 @@ const handleLogout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.user?._id) {
     throw new ApiError(401, "Unauthorized, No user found");
   }
-  const user = await User.findById(req.user._id);
+  const user = await User.findById((req as any).user._id);
 
   if (!user) {
     throw new ApiError(401, "Unauthorized, No user found");
   }
 
-  const refreshToken = user.google.refreshToken;
-  console.log("refreshToken", refreshToken);
+  const refreshToken = (user as any).google.refreshToken;
 
   if (!refreshToken) {
     throw new ApiError(400, "Refresh token is required");
   }
 
-  console.log("comed to refreshToken");
   const response = await axios.post(
     `https://accounts.google.com/o/oauth2/revoke?token=${refreshToken}`,
     {},
@@ -200,7 +196,6 @@ const handleLogout = asyncHandler(async (req: AuthRequest, res: Response) => {
       },
     }
   );
-  console.log("cross the resposne");
   if (response.status !== 200) {
     throw new ApiError(400, "Something went wrong while revoking token");
   }

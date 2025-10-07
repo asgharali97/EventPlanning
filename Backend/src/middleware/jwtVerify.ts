@@ -13,9 +13,9 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Unauthorized, No token provided");
     }
 
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    const user = await User.findById(decodedToken?._id).select(
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as any);
+    
+    const user = await User.findById((decodedToken as any)._id).select(
       "-refreshToken -__v -google"
     );
 
@@ -23,9 +23,9 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Unauthorized, No user found");
     }
 
-    req.user = user;
+    (req as any).user = user
     next();
-  } catch (error) {
+  } catch (error:any) {
     throw new ApiError(401, error.message || "Unauthorized, Invalid token");
   }
 });

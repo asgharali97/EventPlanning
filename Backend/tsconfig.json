@@ -8,8 +8,7 @@
     "strict": true,
     "rootDir": "./src",
     "allowJs": true,
-    "outDir": "./.tsbuild",       
-    "baseUrl": "./src",
+    "outDir": "./.tsbuild",
     "paths": {
       "@shared/*": ["../shared/*"]
     }

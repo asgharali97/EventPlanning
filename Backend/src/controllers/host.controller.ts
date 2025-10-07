@@ -15,7 +15,6 @@ interface AuthRequest extends Request {
 const refundHostDeposit = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const user = await User.findById(req.user?._id);
-    console.log('refund Controller call')
     if (!user || !user.depositHeld || user.role !== "host") {
       throw new ApiError(400, "no deposit to refund");
     }
@@ -38,7 +37,6 @@ const refundHostDeposit = asyncHandler(
 const verifyHostPaymentwebhook = asyncHandler(
   async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
-    console.log('sig get',sig);
     const event = stripe.webhooks.constructEvent(
       req.body,
       sig,
@@ -54,7 +52,6 @@ const verifyHostPaymentwebhook = asyncHandler(
           user.depositHeld = paymentIntent.amount;
           user.stripePaymentId = paymentIntent.id;
           await user.save();
-          console.log("host verified for user:", user._id);
         }
       }
     } else if (event.type === "payment_intent.payment_failed") {

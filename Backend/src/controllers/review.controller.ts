@@ -56,8 +56,6 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
       })
     );
   }
-  
-  console.log('all done ')
   res.status(200).json(
     new ApiResponse(200, "Eligibility check", {
       canReview: true,
@@ -69,7 +67,6 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
 const addReview = asyncHandler(async (req: Request, res: Response) => {
   const { review, rating, eventId } = req.body;
   const userId = (req.user as any)?._id;
-  console.log(req.body)
   if (!userId) {
     throw new ApiError(401, "User not authenticated");
   }

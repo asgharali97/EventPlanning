@@ -1,7 +1,7 @@
-import { addTagsToEvent, clearEventTags, getEventTags, removeTagsFromEvent, replaceEventTags } from "controllers/eventTags.controller.js";
+import { addTagsToEvent, clearEventTags, getEventTags, removeTagsFromEvent, replaceEventTags } from "../controllers/eventTags.controller.js";
 import { Router } from "express";
-import isHost from "middleware/isHost.js";
-import verifyJWT from "middleware/jwtVerify.js";
+import isHost from "../middleware/isHost.js";
+import verifyJWT from "../middleware/jwtVerify.js";
 
 const router = Router();
 
