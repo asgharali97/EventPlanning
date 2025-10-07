@@ -11,7 +11,7 @@ import BookedEvents from "./components/BookedEvents";
 import AllBookedEvents from "./components/AllBookedEvents";
 import EventDetail from "./components/EventDetail";
 import Host from "./components/Host";
-import ProtectedRoute from "./components/protuctedRoutes";
+import ProtectedRoute from "./components/ProtuctedRoutes";
 
 const router = createBrowserRouter([
   {
