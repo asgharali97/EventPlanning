@@ -20,8 +20,7 @@ import {
   Calendar as CalendarIcon,
   MapPin,
   Clock,
-  Users,
-  Star,
+  Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -83,16 +82,14 @@ const Event: React.FC = () => {
     <>
       <div className="satoshi-medium">
         <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
-          <Select
-            value={eventFilter.type}
-            onValueChange={(value: "all" | "physical" | "online") =>
-              setEventFilter({ type: value })
-            }
-          >
-            <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+          <Select>
+            <SelectTrigger className="w-full sm:w-32 satoshi-regular"
+             style={{boxShadow: "var(--shadow-s)"}}
+            >
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent className="px-1 satoshi-regular">
+            <SelectContent className="px-1 satoshi-regular"
+            >
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="physical">Physical</SelectItem>
               <SelectItem value="online">Online</SelectItem>
@@ -101,9 +98,8 @@ const Event: React.FC = () => {
 
           <Input
             placeholder="Search events..."
-            value={eventFilter.search}
-            onChange={(e) => setEventFilter({ search: e.target.value })}
-            className="w-full sm:w-48 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]"
+            className="w-full sm:w-48 satoshi-regular"
+            style={{boxShadow: "var(--shadow-s)"}}
           />
 
           <Popover>
@@ -111,9 +107,10 @@ const Event: React.FC = () => {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full sm:w-48 justify-start text-left font-normal satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]",
+                  "w-full sm:w-48 justify-start text-left font-normal satoshi-regular hover:text-[var-(--secondary)]",
                   !eventFilter.date && "text-muted-foreground"
                 )}
+                style={{boxShadow: "var(--shadow-s)"}}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {eventFilter.date
@@ -124,27 +121,16 @@ const Event: React.FC = () => {
             <PopoverContent className="w-auto p-0 border border-[var(--border)]">
               <Calendar
                 mode="single"
-                selected={
-                  eventFilter.date ? new Date(eventFilter.date) : undefined
-                }
-                onSelect={(date) =>
-                  setEventFilter({
-                    date: date ? format(date, "yyyy-MM-dd") : undefined,
-                  })
-                }
                 initialFocus
                 className="satoshi-regular"
               />
             </PopoverContent>
           </Popover>
 
-          <Select
-            value={eventFilter.sortByPrice || "none"}
-            onValueChange={(value: "asc" | "desc" | "none") =>
-              setEventFilter({ sortByPrice: value === "none" ? null : value })
-            }
-          >
-            <SelectTrigger className="w-full sm:w-32 satoshi-regular shadow-[0px_-1px_4px_-3px_#121212]">
+          <Select>
+            <SelectTrigger className="w-full sm:w-32 satoshi-regular"
+             style={{boxShadow: "var(--shadow-s)"}}
+            >
               <SelectValue placeholder="Sort Price" />
             </SelectTrigger>
             <SelectContent className="px-1 satoshi-regular">
@@ -158,7 +144,7 @@ const Event: React.FC = () => {
           {events?.map((event) => (
             <article
               key={event._id}
-              className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular  rounded-2xl"
+              className="group cursor-pointer transition-colors border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular  rounded-2xl"
             >
               <section onClick={() => handleEventClick(event._id)}>
                 <div className="relative aspect-video overflow-hidden">
@@ -167,12 +153,6 @@ const Event: React.FC = () => {
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl  group-hover:scale-105"
                   />
-                  <div className="absolute top-3 right-3 flex items-center gap-1  backdrop-blur-sm px-2 py-1 rounded-md">
-                    <Star className="w-3.5 h-3.5 stroke-yellow-300 fill-yellow-300" />
-                    <span className="text-white text-sm font-medium satoshi-medium">
-                      {event.rating || "4.5"}
-                    </span>
-                  </div>
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">

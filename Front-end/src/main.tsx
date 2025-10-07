@@ -5,29 +5,19 @@ import App from "./App.js";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from "./lib/queryClient";
-import SignIn from "./components/SignIn";
 import HeroSection from "./components/HeroSection";
 import Event from "./components/Event";
 import BookedEvents from "./components/BookedEvents";
 import AllBookedEvents from "./components/AllBookedEvents";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import EventDetail from "./components/EventDetail";
-
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import Host from "./components/Host";
+import ProtectedRoute from "./components/protuctedRoutes";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      {
-        path: "/signin",
-        element: (
-          <GoogleOAuthProvider clientId={clientId}>
-            <SignIn />
-          </GoogleOAuthProvider>
-        ),
-      },
       {
         path: "/",
         element: <HeroSection />,
@@ -42,24 +32,41 @@ const router = createBrowserRouter([
       },
       {
         path: "booked-events/:session_id",
-        element: <BookedEvents />,
+        element: (
+          <ProtectedRoute>
+            <BookedEvents />
+          </ProtectedRoute>
+        ),
       },
       {
-        path:"my-bookings",
-        element:<AllBookedEvents/>
+        path: "my-bookings",
+        element: (
+          <ProtectedRoute>
+            <AllBookedEvents />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/host",
+        element: (
+          <ProtectedRoute>
+            <Host />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "*",
-        element: <HeroSection/>
+        element: <HeroSection />
       }
     ],
   },
 ]);
+
 const root = document.getElementById("root") as HTMLElement;
 createRoot(root).render(
   <StrictMode>
-  <QueryClientProvider client={queryClient}>
-    <RouterProvider router={router} />
-  </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </StrictMode>
 );

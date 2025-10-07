@@ -25,7 +25,9 @@ export const useUser = () => {
       setAppLoading(true);
       console.log("Fetching user...");
       try {
-        const { data } = await axios.get("/auth/user");
+        const response= await axios.get("/auth/user");
+        const data = response.data?.data || response.data;
+
         return data;
       } catch (error: any) {
         setAppLoading(false);

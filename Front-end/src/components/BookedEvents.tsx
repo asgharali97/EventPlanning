@@ -112,7 +112,7 @@ const BookedEvents = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-4xl min-h-screen py-8 px-6 border-r border-l border-[var(--border)]">
+      <div className="container mx-auto max-w-4xl min-h-screen py-8 border-r border-l border-[var(--border)]">
         <Skeleton className="h-10 w-32 mb-8" />
         <Skeleton className="w-full h-64 rounded-lg mb-6" />
         <div className="space-y-4">
@@ -126,7 +126,7 @@ const BookedEvents = () => {
 
   if (error || !paymentData) {
     return (
-      <div className="container mx-auto max-w-4xl min-h-screen py-8 px-6 border-r border-l border-[var(--border)]">
+      <div className="container mx-auto max-w-4xl min-h-screen py-8 border-r border-l border-[var(--border)]">
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error || "Failed to load booking details"}</AlertDescription>
         </Alert>

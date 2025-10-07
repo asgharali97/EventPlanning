@@ -40,16 +40,18 @@ interface BookedEvent {
 
 
 const AllBookedEvents: React.FC = () => {
-  const { user } = useAuthStore();
-  const { data: bookedEvents, isLoading, error } = useGetBookedEvent(user.data?._id);
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { data: bookedEvents, isLoading, error } =
+  useGetBookedEvent(user._id);
   const handleEventClick = (eventId: string) => {
     navigate(`/event/${eventId}`);
   };
 
+
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen py-8 px-4 bg-[var(--background)]">
+      <div className="w-full min-h-screen py-8 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto">
           <Skeleton className="h-10 w-64 mb-8" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,7 +68,7 @@ const AllBookedEvents: React.FC = () => {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen py-8 px-4 bg-[var(--background)]">
+      <div className="w-full min-h-screen py-8 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -83,7 +85,7 @@ const AllBookedEvents: React.FC = () => {
 
   if (!bookedEvents || bookedEvents.length === 0) {
     return (
-      <div className="w-full min-h-screen py-8 px-4 bg-[var(--background)]">
+      <div className="w-full min-h-screen py-8 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold satoshi-bold text-[var(--foreground)] mb-8">
             My Bookings
@@ -105,26 +107,27 @@ const AllBookedEvents: React.FC = () => {
      return [bookedEvent,bookedEventDetail]
   })
   return (
-    <div className="w-full min-h-screen py-8 px-4 bg-[var(--background)]">
+    <div className="w-full min-h-screen bg-[var(--background)]">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold satoshi-bold text-[var(--foreground)] mb-2">
+        <div className="pt-2">
+          <h1 className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
             My Bookings
           </h1>
-          <p className="text-[var(--muted-foreground)] satoshi-regular">
+           <p className="mt-2 text-[var(--muted-foreground)] satoshi-regular">
             {bookedEvents.length} {bookedEvents.length === 1 ? "booking" : "bookings"} found
           </p>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
+         
           {events.map((event: BookedEvent) => {
             const bookedEvent = event[0]
             const booking = event[1]
             const isPaid = booking.paymentStatus === "paid";
+            console.log(booking)
             return (
               <article
                 key={bookedEvent._id}
-                className="group cursor-pointer transition-colors hover:bg-[var(--card)] border border-[var(--border)] bg-[var(--card)] hover:shadow-[0px_4px_6px_-2px_#5c5c5c] satoshi-regular rounded-2xl overflow-hidden"
+                className="group cursor-pointer transitio border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular rounded-2xl overflow-hidden"
                 onClick={() => handleEventClick(bookedEvent._id)}
               >
                 <div className="relative aspect-video overflow-hidden">
@@ -134,19 +137,14 @@ const AllBookedEvents: React.FC = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-[var(--foreground)] text-[var(--background)] px-3 py-1 rounded-full text-xs font-medium satoshi-medium">
-                      {bookedEvent.category || "General"}
-                    </span>
-                  </div>
                   <div className="absolute top-3 right-3">
                     {isPaid ? (
-                      <span className="bg-green-600 text-[var(--popover)] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
+                      <span className="bg-[var(--foreground)] text-[var(--popover)] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
                         <CheckCircle className="w-3.5 h-3.5" />
                         Paid 
                       </span>
                     ) : (
-                      <span className="bg-yellow-600 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
+                      <span className="bg-[var(--primary)] text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
                         <AlertCircle className="w-3.5 h-3.5" />
                         Pending
                       </span>
