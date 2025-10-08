@@ -34,15 +34,15 @@ import eventTags from './routes/eventTags.route.js';
 import ticketRoutes from './routes/ticket.route.js';
 import reviewRoutes from './routes/review.route.js';
 
-app.use("/auth", authRoutes);
-app.use("/events", eventRoutes);
-app.use("/booking", eventBookingRoutes);
-app.use("/host", hostRoutes);
-app.use('/event', hostEventRoutes);
-app.use('/review', reviewRoutes);
-app.use('/coupon',couponsRoutes);
-app.use('/tag',eventTags);
-app.use('/ticket', ticketRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/booking", eventBookingRoutes);
+app.use("/api/host", hostRoutes);
+app.use('/api/event', hostEventRoutes);
+app.use('/api/review', reviewRoutes);
+app.use('/api/coupon',couponsRoutes);
+app.use('/api/tag',eventTags);
+app.use('/api/ticket', ticketRoutes);
 
 
 export  {app}
