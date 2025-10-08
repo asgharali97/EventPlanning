@@ -127,8 +127,8 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
         discount_amount: discountAmount.toString(),
       },
       mode: "payment",
-    success_url: `http://localhost:5173/booked-events/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `http://localhost:5173/events/`,
+    success_url: `${process.env.FRONTEND_URL}/booked-events/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/events/`,
     });
 
     if (!stripeSession) {
