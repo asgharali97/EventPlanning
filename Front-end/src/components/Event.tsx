@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { cn } from "../lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "./ui/badge";
 import BookEvent from "./BookEvent";
 const Event: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -164,9 +165,13 @@ const Event: React.FC = () => {
                         {event.category || "General"}
                       </p>
                       <div>
-                        <span className="px-2 py-1 rounded-md text-xs font-medium satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]">
+                        <Badge
+                        variant="outline"
+                         className="px-2 py-1 rounded-md text-xs satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
+                         style={{boxShadow: "var(--shadow-s)"}}
+                         >
                           {event.eventType === "online" ? "Online" : "Physical"}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -229,7 +234,7 @@ const Event: React.FC = () => {
                 </p>
                 <Button
                   size="sm"
-                  className="satoshi-medium shadow-sm hover:shadow-md transition-shadow cursor-pointer z-50"
+                  className="satoshi-medium shadow-[var(--shadow-m)] transition-shadow cursor-pointer z-50"
                   onClick={() => {
                     handleBookClick(event);
                   }}

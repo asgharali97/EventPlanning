@@ -262,7 +262,7 @@ const BookedEvents = () => {
           Please keep this for your records.
         </p>
       </div>
-      <div className="flex gap-4 mt-6">
+      <div className="flex flex-wrap gap-4 mt-6">
         <Button
           onClick={() => navigate("/events")}
           variant="outline"

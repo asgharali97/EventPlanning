@@ -9,6 +9,7 @@ import { IUser } from "../models/user.model.js";
 import { generateAndSendTickets } from "./ticket.controller.js";
 import mongoose from 'mongoose';
 import Coupon from '../models/coupon.model.js';
+
 interface AuthRequest extends Request {
   user?: IUser;
 }
