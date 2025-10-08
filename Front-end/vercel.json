@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/:path*",
       "destination":"https://eventplanning-production.up.railway.app/api/:path*"
     },
     {
