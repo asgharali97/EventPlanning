@@ -95,6 +95,7 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: true,
   };
+  console.log('user created', user)
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)

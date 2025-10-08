@@ -22,7 +22,6 @@ export const useUser = () => {
   const query = useQuery<User>({
     queryKey: ["user"],
     queryFn: async () => {
-      setAppLoading(true);
       try {
         const response= await axios.get("/auth/user");
         const data = response.data?.data || response.data;
