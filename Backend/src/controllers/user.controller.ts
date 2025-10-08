@@ -93,9 +93,9 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
-    sameSite: "none" as const,
-    domain: undefined,
+    secure:  process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+    sameSite:  process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,,
+    path: '/',
   };
   console.log("user created", user);
   return res
