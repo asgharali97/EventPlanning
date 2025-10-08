@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import SignIn from "./SignIn";
+import Container from "./Container";
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -86,7 +87,7 @@ const BookEvent: React.FC<BookingDialogProps> = ({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto satoshi-regular p-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto satoshi-regular p-0 w-xs sm:w-sm md:w-lg">
         <div className="relative h-48 w-full">
           <img
             src={event.coverImage}
@@ -103,30 +104,30 @@ const BookEvent: React.FC<BookingDialogProps> = ({
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4 pb-6 border-b border-[var(--border)]">
             <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-[var(--muted-foreground)] mt-0.5" />
+              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-[var(--muted-foreground)] mt-0.5" />
               <div>
                 <p className="text-xs text-[var(--muted-foreground)]">Date</p>
-                <p className="text-sm font-medium satoshi-medium text-[var(--foreground)]">
+                <p className="text-xs md:text-sm font-medium satoshi-medium text-[var(--foreground)]">
                   {format(new Date(event.date), "MMM dd, yyyy")}
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-[var(--muted-foreground)] mt-0.5" />
+              <Clock className="w-4 h-4 md:w-5 md:h-5 text-[var(--muted-foreground)] mt-0.5" />
               <div>
                 <p className="text-xs text-[var(--muted-foreground)]">Time</p>
-                <p className="text-sm font-medium satoshi-medium text-[var(--foreground)]">
+                <p className="text-xs md:text-sm font-medium satoshi-medium text-[var(--foreground)]">
                   {event.time}
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3 col-span-2">
-              <MapPin className="w-5 h-5 text-[var(--muted-foreground)] mt-0.5" />
+              <MapPin className="w-4 h-4 md:w-5 md:h-5 text-[var(--muted-foreground)] mt-0.5" />
               <div>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   Location
                 </p>
-                <p className="text-sm font-medium satoshi-medium text-[var(--foreground)]">
+                <p className="text-xs md:text-sm font-medium satoshi-medium text-[var(--foreground)]">
                   {event.location}
                 </p>
               </div>
@@ -135,26 +136,26 @@ const BookEvent: React.FC<BookingDialogProps> = ({
           <div className="space-y-3 pb-6 border-b border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-[var(--foreground)] satoshi-medium">
+                <h3 className="text-sm md:text-md font-semibold text-[var(--foreground)] satoshi-medium">
                   Number of Tickets
                 </h3>
-                <p className="text-sm text-[var(--muted-foreground)]">
+                <p className="text-xs md:text-sm text-[var(--muted-foreground)]">
                   {event.seats} seats available
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full cursor-pointer"
+                  className="h-6 w-6 md:h-10 md:w-10 rounded-full cursor-pointer"
                   onClick={decrementTickets}
                   disabled={ticketCount <= 1}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
 
-                <span className="text-xl font-bold satoshi-bold min-w-[2rem] text-center">
+                <span className="text-lg md:text-xl font-bold satoshi-bold min-w-[2rem] text-center">
                   {ticketCount}
                 </span>
 
@@ -179,11 +180,11 @@ const BookEvent: React.FC<BookingDialogProps> = ({
             </div>
           </div>
           <div className="space-y-3 pb-6 border-b border-[var(--border)]">
-            <h3 className="font-semibold text-[var(--foreground)] satoshi-medium">
+            <h3 className="text-sm md:text-md font-semibold text-[var(--foreground)] satoshi-medium">
               Have a Coupon Code?
             </h3>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Input
                 type="text"
                 placeholder="Enter coupon code"
@@ -194,14 +195,14 @@ const BookEvent: React.FC<BookingDialogProps> = ({
               <Button
                 variant="outline"
                 onClick={handleApplyCoupon}
-                className="satoshi-medium cursor-pointer"
+                className="satoshi-medium cursor-pointe"
               >
                 Apply
               </Button>
             </div>
           </div>
           <div className="space-y-3">
-            <h3 className="font-semibold text-[var(--foreground)] satoshi-medium">
+            <h3 className="text-sm md:text-md font-semibold text-[var(--foreground)] satoshi-medium">
               Payment Summary
             </h3>
             <div className="space-y-2">
@@ -213,14 +214,12 @@ const BookEvent: React.FC<BookingDialogProps> = ({
                   ${event.price * ticketCount}
                 </span>
               </div>
-
-
               <div className="flex justify-between pt-3 border-t border-[var(--border)]">
-                <span className="font-semibold text-[var(--foreground)] satoshi-medium">
+                <span className="text-sm md:text-md font-semibold text-[var(--foreground)] satoshi-medium">
                   Total
                 </span>
                 <div className="text-right">
-                  <span className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
+                  <span className="text-xl md:text-2xl font-bold satoshi-bold text-[var(--foreground)]">
                     ${totalPrice.toFixed(2)}
                   </span>
                 </div>
@@ -228,7 +227,7 @@ const BookEvent: React.FC<BookingDialogProps> = ({
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-2">
             <Button
               onClick={onClose}
               className="flex-1 satoshi-medium cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
