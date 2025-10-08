@@ -22,6 +22,7 @@ interface IEventBooking extends Document {
   reviewStatus?: "pending" | "approved" | "disputed";
   createdAt: Date;
   updatedAt: Date;
+  date?:Date
 }
 
 const eventBookingSchema = new Schema<IEventBooking>(

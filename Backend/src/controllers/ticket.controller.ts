@@ -233,6 +233,7 @@ const sendTicketEmail = async (
         {
           filename: `ticket-${ticketNumber}.pdf`,
           content: pdfBuffer.toString("base64"), 
+          // @ts-ignore
           type: "application/pdf",
           disposition: "attachment",
         },

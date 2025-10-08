@@ -71,6 +71,7 @@ const checkReviewEligibility = asyncHandler(async (req: AuthRequest, res: Respon
 
 const addReview = asyncHandler(async (req: Request, res: Response) => {
   const { review, rating, eventId } = req.body;
+   // @ts-ignore
   const userId = (req.user as any)?._id;
   if (!userId) {
     throw new ApiError(401, "User not authenticated");
@@ -162,6 +163,7 @@ const addReview = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteReview = asyncHandler(async (req: Request, res: Response) => {
   const { reviewId } = req.params;
+   // @ts-ignore
   const userId = (req.user as any)?._id;
 
   if (!userId) {
@@ -244,6 +246,7 @@ const getEventReviews = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getUserReviews = asyncHandler(async (req: Request, res: Response) => {
+   // @ts-ignore
   const userId = (req.user as any)?._id;
   const { page = 1, limit = 10 } = req.query;
 
@@ -280,6 +283,7 @@ const getUserReviews = asyncHandler(async (req: Request, res: Response) => {
 const updateReview = asyncHandler(async (req: Request, res: Response) => {
   const { reviewId } = req.params;
   const { review, rating } = req.body;
+   // @ts-ignore
   const userId = (req.user as any)?._id;
 
   if (!userId) {

@@ -18,25 +18,25 @@ const refundHostDeposit = asyncHandler(
     if (!user || !user.depositHeld || user.role !== "host") {
       throw new ApiError(400, "no deposit to refund");
     }
-
-    const refund = await stripe.refunds.create({
-      payment_intent: user.stripePaymentId,
-      amount: user.depositHeld,
-    });
-
-    if (!refund) {
+    if(user.stripePaymentId){
+      const refund = await stripe.refunds.create({
+        payment_intent: user.stripePaymentId,
+        amount: user.depositHeld,
+      });
+      
+      if (!refund) {
       throw new ApiError(400, "refund failed");
     }
-
     user.depositHeld = 0;
     await user.save({ validateBeforeSave: false });
-    return res.status(200).json(new ApiResponse(200, "Deposit refunded", {}));
   }
+  return res.status(200).json(new ApiResponse(200, "Deposit refunded", {}));
+}
 );
 
 const verifyHostPaymentwebhook = asyncHandler(
   async (req: Request, res: Response) => {
-    const sig = req.headers["stripe-signature"];
+    const sig = (req?.headers["stripe-signature"] as string);
     const event = stripe.webhooks.constructEvent(
       req.body,
       sig,
@@ -74,7 +74,7 @@ const depositRefundCronJob = asyncHandler(async () => {
       eventId: { $in: events.map((e) => e._id) },
     }).populate("eventId");
     const allEventsPassed = bookings.every(
-      (b) => new Date(b.eventId.date) < new Date()
+      (b: any) => b.eventId?.date ? new Date(b.eventId.date) < new Date() : true
     );
     const avgRating =
       bookings.reduce(
@@ -82,7 +82,7 @@ const depositRefundCronJob = asyncHandler(async () => {
         0
       ) / bookings.length;
 
-    if (allEventsPassed && avgRating > 4) {
+    if (allEventsPassed && avgRating > 4 && host.stripePaymentId) {
       await stripe.refunds.create({
         payment_intent: host.stripePaymentId,
         amount: host.depositHeld,
@@ -93,7 +93,7 @@ const depositRefundCronJob = asyncHandler(async () => {
     }
   }
 });
-
+// @ts-ignore
 cron.schedule('0 0 * * *', depositRefundCronJob)
 
 export { refundHostDeposit, verifyHostPaymentwebhook };

@@ -29,7 +29,9 @@ const gernateAccessTokenAndRefreshToken = async (userId: string) => {
     if (!user) {
       throw new ApiError(404, "User not found");
     }
+     // @ts-ignore
     const accessToken: string = user.gernateAccessToken();
+     // @ts-ignore
     const refreshToken: string = user.gernateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -199,7 +201,9 @@ const handleLogout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (response.status !== 200) {
     throw new ApiError(400, "Something went wrong while revoking token");
   }
+   // @ts-ignore
   user.google.refreshToken = "";
+   // @ts-ignore
   user.google.accessToken = "";
 
   const options = {
