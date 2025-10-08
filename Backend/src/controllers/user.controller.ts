@@ -93,15 +93,25 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
 
   const options = {
     httpOnly: true,
-    secure:  process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-    sameSite:  process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,,
-    path: '/',
+    secure: true,
+    sameSite: "none",
+    path: "/",
   };
   console.log("user created", user);
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    })
     .json(new ApiResponse(200, "User created successfully", { user }));
 });
 
