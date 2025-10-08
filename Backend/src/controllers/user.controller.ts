@@ -29,9 +29,9 @@ const gernateAccessTokenAndRefreshToken = async (userId: string) => {
     if (!user) {
       throw new ApiError(404, "User not found");
     }
-     // @ts-ignore
+    // @ts-ignore
     const accessToken: string = user.gernateAccessToken();
-     // @ts-ignore
+    // @ts-ignore
     const refreshToken: string = user.gernateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -94,8 +94,10 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none" as const,
+    domain: undefined,
   };
-  console.log('user created', user)
+  console.log("user created", user);
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -202,9 +204,9 @@ const handleLogout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (response.status !== 200) {
     throw new ApiError(400, "Something went wrong while revoking token");
   }
-   // @ts-ignore
+  // @ts-ignore
   user.google.refreshToken = "";
-   // @ts-ignore
+  // @ts-ignore
   user.google.accessToken = "";
 
   const options = {
@@ -228,7 +230,7 @@ const getUser = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 const getUserById = asyncHandler(async (req: Request, res: Response) => {
-  const { userId }  = req.body;
+  const { userId } = req.body;
   if (!userId) {
     throw new ApiError(404, "UserId not provided");
   }
@@ -238,7 +240,16 @@ const getUserById = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-  return res.status(200).json(new ApiResponse(200, "User fetched successfuly", user))
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User fetched successfuly", user));
 });
 
-export { createUser, handleLogout, getUser, becomeHost, verifyHostPayment, getUserById };
+export {
+  createUser,
+  handleLogout,
+  getUser,
+  becomeHost,
+  verifyHostPayment,
+  getUserById,
+};
