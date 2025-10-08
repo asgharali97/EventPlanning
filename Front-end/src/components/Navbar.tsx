@@ -18,7 +18,6 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const Navbar = () => {
   const { user, clearAuth } = useAuthStore();
-  console.log('user front-end',user)
   const { isLoading } = useUser();
   const location = useLocation();
   const [isSignInOpen, setIsSignInOpen] = useState(false);

@@ -33,35 +33,24 @@ const SignIn: React.FC<SignInProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSuccess = async (tokenResponse: TokenResponse) => {
-    console.log("🔵 Auth started");
     setIsLoading(true);
     
     try {
       const { data } = await googleAuth(tokenResponse.code);
-      console.log("🟢 Auth response received:", data);
       
       const user = data.data.user;
-      console.log("🟢 User data:", user);
       
       if (user) {
-        // Set auth state
         setAuth(user);
         
-        // Update React Query cache
         queryClient.setQueryData(["user"], user);
         
-        // Invalidate queries to refetch with new auth
         await queryClient.invalidateQueries({ queryKey: ["user"] });
         
-        console.log("🟢 Auth state set successfully");
         
-        // Close dialog first
         onClose();
-        
-        // Small delay before navigation to ensure state is set
         setTimeout(() => {
           setIsLoading(false);
-          // Navigate without reload
           navigate("/events", { replace: true });
         }, 200);
       }
