@@ -75,7 +75,6 @@ const Event: React.FC = () => {
   };
 
   const handleBookClick = (event) => {
-    console.log("clicked");
     setSelectedEvent(event);
     setBookingDialog(true);
   };

@@ -4,7 +4,6 @@ import connectDB from "./db/index.js";
 
 
 
-console.log(process.env.GOOGLE_CLIENT_ID)
 connectDB()
   .then(() => {
     app.listen(process.env.PORT, () => {

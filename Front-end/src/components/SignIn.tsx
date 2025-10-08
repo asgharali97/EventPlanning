@@ -30,14 +30,12 @@ const SignIn: React.FC<SignInProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const handleSuccess = async (tokenResponse: TokenResponse) => {
-    console.log("Google login request initiated");
     try {
       const { data } = await googleAuth(tokenResponse.code);
       const resUser = data.data.user;
       
       if (resUser) {
         setAuth(resUser);
-        console.log(user)
         onClose(); 
         navigate("/events");
       }

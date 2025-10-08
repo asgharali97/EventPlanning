@@ -68,7 +68,6 @@ const BookEvent: React.FC<BookingDialogProps> = ({
       numberOfTickets: ticketCount,
       couponCode
     };
-    console.log("Booking Data:", bookingData);
     const res = await paymentApi(event._id, ticketCount,couponCode);
     const data = res.data.data
     if(data){

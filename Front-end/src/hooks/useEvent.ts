@@ -38,7 +38,6 @@ export const useEvents = () => {
     queryFn: async () => {
       try {
         const response = await axios.get('/events');
-        console.log('API Response:', response);
         
         const eventsData = response.data?.data || response.data;
         
@@ -106,7 +105,6 @@ export const useEventById = (eventId: string | undefined) => {
     queryFn: async () => {
       try {
         const response = await axios.get(`/events/${eventId}`);
-        console.log('Single Event API Response:', response);
         
         const eventData = response.data?.data || response.data;
         

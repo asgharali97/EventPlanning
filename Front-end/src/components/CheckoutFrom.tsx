@@ -14,7 +14,6 @@ const CheckoutForm = () => {
     event.preventDefault();
 
     if (!stripe || !elements) {
-      // Stripe.js hasn't yet loaded
       return;
     }
 
@@ -23,11 +22,10 @@ const CheckoutForm = () => {
 
     try {
       const response = await becomeHost();
-      console.log(response.data.data);
 
-      // Confirm the payment with Stripe
       const result = await stripe.confirmCardPayment(response.data.data, {
         payment_method: {
+          
           card: elements.getElement(CardElement),
           billing_details: {
             name: user.name,
@@ -35,15 +33,13 @@ const CheckoutForm = () => {
           },
         },
       });
-      console.log(result);
-      console.log(result.paymentIntent.id);
       if (result.error) {
         setError(result.error.message);
       } else if (result.paymentIntent.status === "succeeded") {
-        console.log("Payment succeeded!", result.paymentIntent.id);
+
         
         const response = await verifyHostPayment({ paymentIntentId:result.paymentIntent.id });
-        console.log(response);
+
 
         if (response) {
           alert("you are now host");
@@ -52,7 +48,6 @@ const CheckoutForm = () => {
       }
     } catch (err) {
       setError("An unexpected error occurred.");
-      console.error(err);
     }
     setLoading(false);
   };

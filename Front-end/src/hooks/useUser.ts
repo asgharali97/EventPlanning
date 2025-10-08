@@ -23,7 +23,6 @@ export const useUser = () => {
     queryKey: ["user"],
     queryFn: async () => {
       setAppLoading(true);
-      console.log("Fetching user...");
       try {
         const response= await axios.get("/auth/user");
         const data = response.data?.data || response.data;
@@ -51,7 +50,6 @@ export const useUser = () => {
 
   useEffect(() => {
     if (query.data) {
-      console.log("Setting auth with user data:", query.data);
       setAuth(query.data);
     }
   }, [query.data, setAuth]);

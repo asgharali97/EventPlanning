@@ -123,7 +123,6 @@ const AllBookedEvents: React.FC = () => {
             const bookedEvent = event[0]
             const booking = event[1]
             const isPaid = booking.paymentStatus === "paid";
-            console.log(booking)
             return (
               <article
                 key={bookedEvent._id}

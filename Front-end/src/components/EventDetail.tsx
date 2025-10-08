@@ -25,10 +25,8 @@ const EventDetail = () => {
   const { user } = useAuthStore();
   const { data: event, isLoading, error } = useEventById(eventId);
   const { data: reviews = [], isLoading: reviewsLoading, error: reviewError } = useReviews(eventId);
-  console.log(reviews)
   const { mutate: addReview, isLoading: isSubmitting } = useAddReview();
   const { data: eligibility, isLoading: eligibilityLoading } = useReviewEligibility(eventId, user.data?._id);
-  console.log(eligibility)
   const hostId = event?.hostId;
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const {

@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node .tsbuild/index.js",
     "build": "rimraf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -r dotenv/config --experimental-json-modules --ext ts --exec \"npx tsx src/index.ts\""
@@ -24,13 +24,13 @@
     "express": "^5.1.0",
     "googleapis": "^149.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.4.1",
+    "mongoose": "^8.19.1",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "pdfkit": "^0.17.2",
     "qrcode": "^1.5.4",
-    "resend": "^6.1.0",
+    "resend": "^6.1.2",
     "stripe": "^18.1.1",
     "uuid": "^11.1.0"
   },

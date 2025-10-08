@@ -9,10 +9,12 @@
     "rootDir": "./src",
     "allowJs": true,
     "outDir": "./.tsbuild",
+    "skipLibCheck": true,
     "paths": {
       "@shared/*": ["../shared/*"]
     }
   },
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"

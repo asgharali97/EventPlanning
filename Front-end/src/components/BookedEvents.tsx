@@ -63,10 +63,8 @@ const BookedEvents = () => {
       .then((res) => {
         const booking = res.data.data.booking;
         setPaymentData(booking);
-        console.log("Payment Data:", booking);
       })
       .catch((err) => {
-        console.error("Payment error:", err);
         setError("Failed to verify payment. Please contact support.");
       })
       .finally(() => {
