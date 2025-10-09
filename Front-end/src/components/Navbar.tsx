@@ -36,14 +36,14 @@ const Navbar = () => {
 
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) => {
     if (isHomePage) {
-      return "text-[var(--primary-foreground)] text-lg font-medium";
+      return "satoshi-mdedium text-[var(--primary-foreground)] text-lg font-medium";
     }
 
     if (isActive) {
-      return "text-[var(--foreground)] text-lg font-medium";
+      return "satoshi-mdedium text-[var(--foreground)] text-lg font-medium";
     }
 
-    return "text-[var(--secondary)] text-lg font-normal";
+    return "satoshi-regular text-[var(--secondary)] text-lg font-normal";
   };
 
   const getMobileNavLinkClass = ({ isActive }: { isActive: boolean }) => {
