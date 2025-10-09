@@ -16,20 +16,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Calendar as CalendarIcon,
-  MapPin,
-  Clock,
-  Users
-} from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Clock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { cn } from "../lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "./ui/badge";
 import BookEvent from "./BookEvent";
+import SignIn from "./SignIn";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { useAuthStore } from "@/store/authStore";
 const Event: React.FC = () => {
+  const { user } = useAuthStore();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const { eventFilter, setEventFilter } = useUIStore();
@@ -37,6 +36,9 @@ const Event: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   if (isLoading)
     return (
       <div className="py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-[var(--background)]">
@@ -71,7 +73,12 @@ const Event: React.FC = () => {
     );
 
   const handleEventClick = async (eventId: string) => {
-    navigate(`/event/${eventId}`);
+    if (!user) {
+      setIsSignInOpen(true);
+    }
+    if(user){
+      navigate(`/event/${eventId}`);
+    }
   };
 
   const handleBookClick = (event) => {
@@ -83,13 +90,13 @@ const Event: React.FC = () => {
       <div className="satoshi-medium">
         <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
           <Select>
-            <SelectTrigger className="w-full sm:w-32 satoshi-regular"
-             style={{boxShadow: "var(--shadow-s)"}}
+            <SelectTrigger
+              className="w-full sm:w-32 satoshi-regular"
+              style={{ boxShadow: "var(--shadow-s)" }}
             >
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent className="px-1 satoshi-regular"
-            >
+            <SelectContent className="px-1 satoshi-regular">
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="physical">Physical</SelectItem>
               <SelectItem value="online">Online</SelectItem>
@@ -99,7 +106,7 @@ const Event: React.FC = () => {
           <Input
             placeholder="Search events..."
             className="w-full sm:w-48 satoshi-regular"
-            style={{boxShadow: "var(--shadow-s)"}}
+            style={{ boxShadow: "var(--shadow-s)" }}
           />
 
           <Popover>
@@ -110,7 +117,7 @@ const Event: React.FC = () => {
                   "w-full sm:w-48 justify-start text-left font-normal satoshi-regular hover:text-[var-(--secondary)]",
                   !eventFilter.date && "text-muted-foreground"
                 )}
-                style={{boxShadow: "var(--shadow-s)"}}
+                style={{ boxShadow: "var(--shadow-s)" }}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {eventFilter.date
@@ -128,8 +135,9 @@ const Event: React.FC = () => {
           </Popover>
 
           <Select>
-            <SelectTrigger className="w-full sm:w-32 satoshi-regular"
-             style={{boxShadow: "var(--shadow-s)"}}
+            <SelectTrigger
+              className="w-full sm:w-32 satoshi-regular"
+              style={{ boxShadow: "var(--shadow-s)" }}
             >
               <SelectValue placeholder="Sort Price" />
             </SelectTrigger>
@@ -165,10 +173,10 @@ const Event: React.FC = () => {
                       </p>
                       <div>
                         <Badge
-                        variant="outline"
-                         className="px-2 py-1 rounded-md text-xs satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
-                         style={{boxShadow: "var(--shadow-s)"}}
-                         >
+                          variant="outline"
+                          className="px-2 py-1 rounded-md text-xs satoshi-medium  bg-[var(--foreground)] text-[var(--muted)]"
+                          style={{ boxShadow: "var(--shadow-s)" }}
+                        >
                           {event.eventType === "online" ? "Online" : "Physical"}
                         </Badge>
                       </div>
@@ -250,6 +258,9 @@ const Event: React.FC = () => {
         onClose={() => setBookingDialog(false)}
         event={selectedEvent}
       />
+      <GoogleOAuthProvider clientId={clientId}>
+        <SignIn isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
+      </GoogleOAuthProvider>
     </>
   );
 };

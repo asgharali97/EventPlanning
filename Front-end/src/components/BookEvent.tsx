@@ -6,11 +6,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, MapPin, Minus, Plus, CreditCard } from "lucide-react";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { paymentApi } from "@/api/api";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
-
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import SignIn from "./SignIn";
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +36,9 @@ const BookEvent: React.FC<BookingDialogProps> = ({
   const [ticketCount, setTicketCount] = useState(1);
   const [couponCode, setCouponCode] = useState("");
   const { user } = useAuthStore()
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const navigate = useNavigate()
   if (!event) return null;
 
@@ -60,7 +63,7 @@ const BookEvent: React.FC<BookingDialogProps> = ({
 
   const handleBooking = async () => {
     if(!user){
-      navigate('/signin')
+      setIsSignInOpen(true)
       return 
     }
     const bookingData = {
@@ -81,6 +84,7 @@ const BookEvent: React.FC<BookingDialogProps> = ({
   const isFormValid = ticketCount > 0;
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto satoshi-regular p-0">
         <div className="relative h-48 w-full">
@@ -243,6 +247,10 @@ const BookEvent: React.FC<BookingDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+    <GoogleOAuthProvider clientId={clientId}>
+            <SignIn isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
+          </GoogleOAuthProvider>
+    </>
   );
 };
 
