@@ -27,7 +27,6 @@ const EventReviews = ({
     isLoading,
     error: reviewError,
   } = useReviews(eventId);
-  console.log(reviews);
   const { mutate: addReview, isLoading: isSubmitting } = useAddReview();
   const { data: eligibility, isLoading: eligibilityLoading } =
     useReviewEligibility(eventId, user?._id);
@@ -109,6 +108,7 @@ const EventReviews = ({
       }
     );
   };
+  console.log(reviews.reviews);
   return (
     <>
       <div className="mt-6 sm:mt-8 border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 pb-6">
@@ -116,10 +116,10 @@ const EventReviews = ({
           <h4 className="text-xl sm:text-2xl font-bold satoshi-bold">
             Reviews
           </h4>
-          <p className="text-[var(--secondary)] text-sm sm:text-base satoshi-regular">
-            {reviews.length} review
-            {reviews.length !== 1 ? "s" : ""}
-          </p>
+          {/* <p className="text-[var(--secondary)] text-sm sm:text-base satoshi-regular">
+            {reviews.reviews.length} review
+            {reviews.reviews.length !== 1 ? "s" : ""} */}
+          {/* </p> */}
         </div>
 
         {isLoading ? (
@@ -127,13 +127,13 @@ const EventReviews = ({
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
           </div>
-        ) : reviews.length === 0 ? (
+        ) : reviews.reviews.length === 0 ? (
           <p className="text-[var(--secondary)] text-center py-8 text-sm sm:text-base satoshi-regular">
             No reviews yet. Be the first to review this event!
           </p>
         ) : (
           <div className="space-y-4 sm:space-y-6">
-            {reviews?.map((review) => (
+            {reviews.reviews?.map((review) => (
               <div key={review._id} className="space-y-3">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                   <div className="flex gap-3 items-start flex-1">
