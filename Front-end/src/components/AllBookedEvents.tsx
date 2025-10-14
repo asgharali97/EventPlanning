@@ -9,10 +9,12 @@ import {
   Users,
   CheckCircle,
   AlertCircle,
+  ArrowLeft
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { Button } from "./ui/button";
 
 interface BookedEvent {
   _id: string;
@@ -68,35 +70,39 @@ const AllBookedEvents: React.FC = () => {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen py-8 bg-[var(--background)]">
-        <div className="max-w-7xl mx-auto">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error instanceof Error
-                ? error.message
-                : "Failed to load booked events"}
-            </AlertDescription>
-          </Alert>
-        </div>
+       <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+           {error instanceof Error ? error.message : "Failed to load events"}
+          </AlertDescription>
+        </Alert>
+        <Button
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={() => navigate('/events')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Button>
       </div>
     );
   }
 
   if (!bookedEvents || bookedEvents.length === 0) {
     return (
-      <div className="w-full min-h-screen py-8 bg-[var(--background)]">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold satoshi-bold text-[var(--foreground)] mb-8">
-            My Bookings
-          </h1>
-          <Alert>
-            <AlertDescription className="satoshi-regular">
-              You haven't booked any events yet. Start exploring events to make
+     <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+            You haven't booked any events yet. Start exploring events to make
               your first booking!
-            </AlertDescription>
-          </Alert>
-        </div>
+          </AlertDescription>
+        </Alert>
+        <Button
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={() => navigate('/events')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+            Book Events
+        </Button>
       </div>
     );
   }

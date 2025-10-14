@@ -124,11 +124,16 @@ const BookedEvents = () => {
 
   if (error || !paymentData) {
     return (
-      <div className="container mx-auto max-w-4xl min-h-screen py-8 border-r border-l border-[var(--border)]">
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error || "Failed to load booking details"}</AlertDescription>
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+           {error || "Failed to load booking details"}
+          </AlertDescription>
         </Alert>
-        <Button onClick={() => navigate("/events")} variant="outline">
+        <Button
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={navigate('/event')}
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
         </Button>

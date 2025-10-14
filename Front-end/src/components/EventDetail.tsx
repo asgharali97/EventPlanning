@@ -20,19 +20,11 @@ import EventReviews from "./EventReviews";
 const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const { data: event, isLoading, error } = useEventById(eventId);
-  const hostId = event?.hostId;
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
-  const {
-    data: host,
-    isLoading: hostLoading,
-    error: hostError,
-  } = useUserById(hostId);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
-  const userId = user._id;
-  if (isLoading || hostLoading) {
+  console.log(event)
+  if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
         <Skeleton className="h-10 w-24" />
@@ -47,20 +39,17 @@ const EventDetail = () => {
     );
   }
 
-  if (error || hostError) {
+  if (error) {
     return (
-      <div className="max-w-5xl mx-auto py-8">
-        <Alert variant="destructive">
-          <AlertDescription>
-            {error instanceof Error
-              ? error.message
-              : "Failed to load event details"}
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+            {error instanceof Error ? error.message : "Failed to load events"}
           </AlertDescription>
         </Alert>
         <Button
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
           onClick={() => navigate("/events")}
-          className="mt-4"
-          variant="outline"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -71,14 +60,15 @@ const EventDetail = () => {
 
   if (!event) {
     return (
-      <div className="max-w-5xl mx-auto py-8">
-        <Alert>
-          <AlertDescription>Event not found</AlertDescription>
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+            Event not Found
+          </AlertDescription>
         </Alert>
         <Button
-          onClick={() => navigate("/events")}
-          className="mt-4"
-          variant="outline"
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={ () => navigate("/events")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -122,36 +112,38 @@ const EventDetail = () => {
           </Badge>
           <div className="mt-6 sm:mt-8 flex gap-3 sm:gap-4 items-center border-t border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 py-3 sm:py-4">
             <img
-              src={host?.avatar}
+              src={event.hostId.avatar}
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full"
               alt="Host avatar"
             />
             <h3 className="text-sm sm:text-base satoshi-medium">
-              By {host?.name}
+              By {event.hostId.name}
             </h3>
-            <Tooltip>
-              <TooltipTrigger>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  className="fill-[var(--primary)] stroke-[var(--popover)] cursor-pointer"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" />
-                  <path d="M9 12l2 2l4 -4" />
-                </svg>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Verified Host</p>
-              </TooltipContent>
-            </Tooltip>
+            {event.hostId.isVerified && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="fill-[var(--primary)] stroke-[var(--popover)] cursor-pointer"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" />
+                    <path d="M9 12l2 2l4 -4" />
+                  </svg>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Verified Host</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="mt-6 sm:mt-8 border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 pb-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">

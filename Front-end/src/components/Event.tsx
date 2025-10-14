@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useEvents } from "../hooks/useEvent";
 import { useUIStore } from "@/store/uiStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +16,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, MapPin, Clock, Users } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  MapPin,
+  Clock,
+  Users,
+  ArrowLeft,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, set } from "date-fns";
 import { cn } from "../lib/utils";
@@ -27,17 +33,24 @@ import BookEvent from "./BookEvent";
 import SignIn from "./SignIn";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthStore } from "@/store/authStore";
+import { useDebounce } from "@/hooks/useDebounce";
+
 const Event: React.FC = () => {
   const { user } = useAuthStore();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const { eventFilter, setEventFilter } = useUIStore();
   const { data: events, isLoading, error } = useEvents();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState(eventFilter.search || "");
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const debounceSearch = useDebounce(searchTerm, 1000);
+
+  useEffect(() => {
+    setEventFilter({ search: debounceSearch });
+  }, [debounceSearch, setEventFilter]);
+
   if (isLoading)
     return (
       <div className="py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-[var(--background)]">
@@ -51,10 +64,10 @@ const Event: React.FC = () => {
 
   if (error)
     return (
-      <div className="py-8">
-        <Alert variant="destructive">
-          <AlertDescription>
-            {error instanceof Error ? error.message : "Failed to load events"}
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
+           {error instanceof Error ? error.message : "Failed to load events"}
           </AlertDescription>
         </Alert>
       </div>
@@ -62,28 +75,31 @@ const Event: React.FC = () => {
 
   if (!events || events.length === 0)
     return (
-      <div className="py-8">
-        <Alert>
-          <AlertDescription>
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+        <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
+          <AlertDescription className="text-lg md:text-xl text-center">
             No events found matching your criteria
           </AlertDescription>
         </Alert>
+        <Button
+          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={() => setEventFilter({type:"all",search:"",date:"",sortByPrice:null})}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Button>
       </div>
     );
 
   const handleEventClick = async (eventId: string) => {
-    if (!user) {
-      setIsSignInOpen(true);
-    }
-    if (user) {
       navigate(`/event/${eventId}`);
-    }
   };
 
   const handleBookClick = (event) => {
     setSelectedEvent(event);
     setBookingDialog(true);
   };
+
   return (
     <>
       <div className="satoshi-medium">
@@ -111,10 +127,8 @@ const Event: React.FC = () => {
             placeholder="Search events..."
             className="w-full sm:w-48 satoshi-regular"
             style={{ boxShadow: "var(--shadow-s)" }}
-            value={eventFilter.search || ""}
-            onChange={(e: any) => {
-              setEventFilter({ search: e.target.value });
-            }}
+            value={searchTerm}
+            onChange={(e: any) => setSearchTerm(e.target.value)}
           />
 
           <Popover>
@@ -135,24 +149,24 @@ const Event: React.FC = () => {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 border border-[var(--border)]">
               <Calendar
-              mode="single"
-              selected={
-                eventFilter.date ? new Date(eventFilter.date) : undefined
-              }
-              onSelect={(date) => {
-                if (date) {
-                const isoDate = date.toISOString();
-                setEventFilter({
-                  date: isoDate,
-                });
-                } else {
-                setEventFilter({
-                  date: undefined,
-                });
+                mode="single"
+                selected={
+                  eventFilter.date ? new Date(eventFilter.date) : undefined
                 }
-              }}
-              initialFocus
-              className="satoshi-regular"
+                onSelect={(date) => {
+                  if (date) {
+                    const isoDate = date.toISOString();
+                    setEventFilter({
+                      date: isoDate,
+                    });
+                  } else {
+                    setEventFilter({
+                      date: undefined,
+                    });
+                  }
+                }}
+                initialFocus
+                className="satoshi-regular"
               />
             </PopoverContent>
           </Popover>

@@ -27,7 +27,7 @@ const getAllEvents = asyncHandler(async (req: Request, res: Response) => {
 
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).populate('hostId',"_id name email avatar isVerified");
   console.log("req come");
   if (!event) {
     throw new ApiError(404, "Event not found");
