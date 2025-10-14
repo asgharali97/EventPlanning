@@ -35,7 +35,6 @@ const Event: React.FC = () => {
   const { data: events, isLoading, error } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -76,7 +75,7 @@ const Event: React.FC = () => {
     if (!user) {
       setIsSignInOpen(true);
     }
-    if(user){
+    if (user) {
       navigate(`/event/${eventId}`);
     }
   };
@@ -89,7 +88,12 @@ const Event: React.FC = () => {
     <>
       <div className="satoshi-medium">
         <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
-          <Select>
+          <Select
+            value={eventFilter.type}
+            onValueChange={(value: "all" | "physical" | "online") =>
+              setEventFilter({ type: value })
+            }
+          >
             <SelectTrigger
               className="w-full sm:w-32 satoshi-regular"
               style={{ boxShadow: "var(--shadow-s)" }}
@@ -107,6 +111,10 @@ const Event: React.FC = () => {
             placeholder="Search events..."
             className="w-full sm:w-48 satoshi-regular"
             style={{ boxShadow: "var(--shadow-s)" }}
+            value={eventFilter.search || ""}
+            onChange={(e: any) => {
+              setEventFilter({ search: e.target.value });
+            }}
           />
 
           <Popover>
@@ -127,14 +135,34 @@ const Event: React.FC = () => {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 border border-[var(--border)]">
               <Calendar
-                mode="single"
-                initialFocus
-                className="satoshi-regular"
+              mode="single"
+              selected={
+                eventFilter.date ? new Date(eventFilter.date) : undefined
+              }
+              onSelect={(date) => {
+                if (date) {
+                const isoDate = date.toISOString();
+                setEventFilter({
+                  date: isoDate,
+                });
+                } else {
+                setEventFilter({
+                  date: undefined,
+                });
+                }
+              }}
+              initialFocus
+              className="satoshi-regular"
               />
             </PopoverContent>
           </Popover>
 
-          <Select>
+          <Select
+            value={eventFilter.sortByPrice || "none"}
+            onValueChange={(value: "asc" | "desc") =>
+              setEventFilter({ sortByPrice: value })
+            }
+          >
             <SelectTrigger
               className="w-full sm:w-32 satoshi-regular"
               style={{ boxShadow: "var(--shadow-s)" }}

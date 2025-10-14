@@ -4,23 +4,148 @@ import Event from "../models/event.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const getAllEvents = asyncHandler(async (req: Request, res:Response) => {
+interface EventQueryParams {
+  type?: "all" | "physical" | "online";
+  search?: string;
+  date?: string;
+  sortByPrice?: "asc" | "desc" | "none";
+  page?: string;
+  limit?: string;
+  category?: string;
+}
+
+const getAllEvents = asyncHandler(async (req: Request, res: Response) => {
   const events = await Event.find();
 
   if (!events) {
     throw new ApiError(404, "No events found");
   }
-  res.status(200).json(new ApiResponse(200, "Events fetched successfully", events));
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Events fetched successfully", events));
 });
 
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = req.params;
-  const event = await Event.findById(eventId);  
+  const event = await Event.findById(eventId);
+  console.log("req come");
   if (!event) {
     throw new ApiError(404, "Event not found");
   }
-  return res.status(200).json(new ApiResponse(200, "Event fetched successfully", event));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Event fetched successfully", event));
 });
 
+const MAX_PAGE_SIZE = 50;
 
-export  { getAllEvents, getEventById };
+const getAllEventsEnhanced = asyncHandler(
+  async (req: Request, res: Response) => {
+    console.log("req come");
+    const {
+      q, 
+      category,
+      eventType,
+      priceMin,
+      priceMax,
+      date,
+      sortBy = "date", 
+      sortDir = "asc", 
+      page = "1",
+      limit = "12",
+    } = req.query as Record<string, string>;
+    const pageNum = Math.max(1, parseInt(page || "1", 10));
+    const limitNum = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, parseInt(limit || "12", 10))
+    );
+    const skip = (pageNum - 1) * limitNum;
+
+    const match: any = {};
+
+    if (category) match.category = { $in: category.split(",") };
+    if (eventType) match.eventType = { $in: eventType.split(",") };
+
+
+    if (priceMin || priceMax) {
+      match.price = {};
+      if (priceMin) match.price.$gte = Number(priceMin);
+      if (priceMax) match.price.$lte = Number(priceMax);
+    }
+
+    if (date) {
+      console.log(date)
+      const now = new Date();
+      const targetDate = new Date(date);
+      match.date = { $gte: now, $lte: targetDate };
+    }
+
+    const textSearchStage: any[] = [];
+    if (q && q.trim().length) {
+      textSearchStage.push({
+        $match: {
+          $or: [
+            { title: { $regex: q.trim(), $options: "i" } },
+            { description: { $regex: q.trim(), $options: "i" } },
+            { tags: { $regex: q.trim(), $options: "i" } },
+          ],
+        },
+      });
+    }
+
+    const sortStage: any = {};
+    if (sortBy === "price") sortStage.price = sortDir === "asc" ? 1 : -1;
+    else if (sortBy === "relevance" && q) sortStage.relevance = -1;
+    else sortStage.date = sortDir === "asc" ? 1 : -1;
+
+    const pipeline: any[] = [
+      { $match: match },
+      ...textSearchStage,
+      {
+        $lookup: {
+          from: "users",
+          let: { hostId: "$hostId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$hostId"] } } },
+            {
+              $project: {
+                _id: 1,
+                email: 1,
+                avatar: 1,
+                fullName: 1,
+                isVerified: 1,
+                role: 1,
+              },
+            },
+          ],
+          as: "eventHost",
+        },
+      },
+      {
+        $addFields: {
+          host: { $arrayElemAt: ["$eventHost", 0] },
+        },
+      },
+      { $project: { eventHost: 0 } },
+      { $sort: sortStage },
+      { $skip: skip },
+      { $limit: limitNum },
+    ];
+
+    const results = await Event.aggregate(pipeline).allowDiskUse(true).exec();
+
+
+    const totalCount = await Event.countDocuments(match);
+
+    return res.status(200).json(
+      new ApiResponse(200, "Success", {
+        events: results,
+        totalCount,
+        page: pageNum,
+        limit: limitNum,
+      })
+    );
+  }
+);
+
+export { getAllEvents, getEventById, getAllEventsEnhanced };

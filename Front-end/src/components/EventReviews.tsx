@@ -108,7 +108,7 @@ const EventReviews = ({
       }
     );
   };
-  console.log(reviews.reviews);
+
   return (
     <>
       <div className="mt-6 sm:mt-8 border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 pb-6">

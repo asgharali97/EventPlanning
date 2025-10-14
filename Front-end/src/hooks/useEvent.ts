@@ -1,8 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import axios from '../lib/axios';
-import { useUIStore } from '@/store/uiStore';
-import { useAuthStore } from '@/store/authStore';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import axios from "../lib/axios";
+import { useUIStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface OnlineDetails {
   link: string;
@@ -21,180 +21,207 @@ interface Event {
   description?: string;
   coverImage: string;
   location: string;
-  hostId: string;
-  isVerified: boolean;
-  eventType: 'physical' | 'online';
+  hostId: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar?: string;
+    isVerified: boolean;
+  };
+  eventType: "physical" | "online";
   onlineDetails?: OnlineDetails;
   tags?: string[];
   rating?: number;
 }
 
+interface FetchEventsParams {
+  type?: "all" | "physical" | "online";
+  search?: string;
+  date?: string;
+  sortByPrice?: "asc" | "desc" | null;
+}
+
+const fetchEvents = async (params: FetchEventsParams) => {
+  const { type, search, date, sortByPrice } = params;
+  const query = new URLSearchParams();
+
+  if (search) query.append("q", search);
+  if (type && type !== "all") query.append("eventType", type);
+  if (date) query.append("date", date);
+  if (sortByPrice)
+    query.append("sortBy", "price") && query.append("sortDir", sortByPrice);
+
+  const res = await axios.get<{ data: Event[] }>(`events?${query.toString()}`);
+  if (!res.data.data.events) {
+    throw new Error("Not found events");
+  }
+  return res.data.data?.events;
+};
+
 export const useEvents = () => {
   const { eventFilter, addToast } = useUIStore();
-  const { isAuthenticated } = useAuthStore();
 
   const query = useQuery<Event[]>({
-    queryKey: ['events'], 
-    queryFn: async () => {
-      try {
-        const response = await axios.get('/events');
-        
-        const eventsData = response.data?.data || response.data;
-        
-        if (!Array.isArray(eventsData)) {
-          console.error('Invalid response format:', response.data);
-          throw new Error('Expected an array of events');
-        }
-        
-        return eventsData as Event[];
-      } catch (error: any) {
-        console.error('Fetch Events Error:', error);
-        throw error;
-      }
-    },
+    queryKey: ["events", eventFilter],
+    queryFn: () => fetchEvents(eventFilter),
     select: (data) => {
       let filtered = data;
-      
-      if (eventFilter.type !== 'all') {
-        filtered = filtered.filter((event) => event.eventType === eventFilter.type);
-      }
-      
-      if (eventFilter.date) {
-        filtered = filtered.filter((event) => 
-          new Date(event.date).toISOString().split('T')[0] === eventFilter.date
+      if (eventFilter.type !== "all") {
+        filtered = filtered.filter(
+          (event) => event.eventType === eventFilter.type
         );
       }
-      
+
       if (eventFilter.search) {
         filtered = filtered.filter((event) =>
           event.title.toLowerCase().includes(eventFilter.search.toLowerCase())
         );
       }
-      
+
       if (eventFilter.sortByPrice) {
         filtered = [...filtered].sort((a, b) =>
-          eventFilter.sortByPrice === 'asc' ? a.price - b.price : b.price - a.price
+          eventFilter.sortByPrice === "asc"
+            ? a.price - b.price
+            : b.price - a.price
         );
       }
-      
       return filtered;
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 5 * 60 * 1000,
     retry: 2,
   });
 
   useEffect(() => {
     if (query.error) {
-      const errorMessage = query.error instanceof Error 
-        ? query.error.message 
-        : 'Failed to fetch events';
-      
-      addToast(errorMessage, 'destructive');
+      const errorMessage =
+        query.error instanceof Error
+          ? query.error.message
+          : "Failed to fetch events";
+
+      addToast(errorMessage, "destructive");
     }
   }, [query.error, addToast]);
 
   return query;
 };
+
+// export const useEvents = () => {
+//   const filters = useUIStore((state) => state.eventFilter);
+
+//   const { data, isLoading, error } = useQuery({
+//     queryKey: ['events', filters],
+//     queryFn: () => fetchEvents(filters),
+//     staleTime: 1000 * 60 * 5,
+//   });
+
+//   return {
+//     events: data ?? [],
+//     isLoading,
+//     error,
+//   };
+// };
 
 export const useEventById = (eventId: string | undefined) => {
   const { addToast } = useUIStore();
 
   const query = useQuery<Event>({
-    queryKey: ['event', eventId],
-    
+    queryKey: ["event", eventId],
+
     queryFn: async () => {
       try {
         const response = await axios.get(`/events/${eventId}`);
-        
+
         const eventData = response.data?.data || response.data;
-        
-        if (!eventData || typeof eventData !== 'object') {
-          console.error('Invalid event response format:', response.data);
-          throw new Error('Invalid event data received');
+
+        if (!eventData || typeof eventData !== "object") {
+          console.error("Invalid event response format:", response.data);
+          throw new Error("Invalid event data received");
         }
-        
+
         return eventData as Event;
       } catch (error: any) {
-        console.error('Fetch Event By ID Error:', error);
+        console.error("Fetch Event By ID Error:", error);
         if (error.response?.status === 404) {
-          throw new Error('Event not found');
+          throw new Error("Event not found");
         } else if (error.response?.status === 403) {
-          throw new Error('You do not have permission to view this event');
+          throw new Error("You do not have permission to view this event");
         }
-        
+
         throw error;
       }
     },
     enabled: !!eventId,
-    
+
     staleTime: 5 * 60 * 1000,
-    
+
     gcTime: 10 * 60 * 1000,
-    
+
     retry: 2,
-    
+
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (query.error) {
-      const errorMessage = query.error instanceof Error 
-        ? query.error.message 
-        : 'Failed to fetch event details';
-      
-      addToast(errorMessage, 'destructive');
+      const errorMessage =
+        query.error instanceof Error
+          ? query.error.message
+          : "Failed to fetch event details";
+
+      addToast(errorMessage, "destructive");
     }
   }, [query.error, addToast]);
 
   return query;
 };
 
-export const useGetBookedEvent = (userId:string) => {
+export const useGetBookedEvent = (userId: string) => {
   const { addToast } = useUIStore();
 
   const query = useQuery<Event>({
-    queryKey: ['event', userId],
-    
+    queryKey: ["event", userId],
+
     queryFn: async () => {
       try {
         const response = await axios.get(`/booking/get-booked-events`);
-        
+
         const eventData = response.data?.data || response.data;
-        if (!eventData || typeof eventData !== 'object') {
-          console.error('Invalid event response format:', response.data);
-          throw new Error('Invalid event data received');
+        if (!eventData || typeof eventData !== "object") {
+          console.error("Invalid event response format:", response.data);
+          throw new Error("Invalid event data received");
         }
-        
+
         return eventData as Event;
       } catch (error: any) {
-        console.error('Fetch Event By ID Error:', error);
+        console.error("Fetch Event By ID Error:", error);
         if (error.response?.status === 404) {
-          throw new Error('Event not found');
+          throw new Error("Event not found");
         } else if (error.response?.status === 403) {
-          throw new Error('You do not have permission to view this event');
+          throw new Error("You do not have permission to view this event");
         }
-        
+
         throw error;
       }
     },
     enabled: !!userId,
-    
+
     staleTime: 5 * 60 * 1000,
-    
+
     gcTime: 10 * 60 * 1000,
-    
+
     retry: 2,
-    
+
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (query.error) {
-      const errorMessage = query.error instanceof Error 
-        ? query.error.message 
-        : 'Failed to fetch event details';
-      
-      addToast(errorMessage, 'destructive');
+      const errorMessage =
+        query.error instanceof Error
+          ? query.error.message
+          : "Failed to fetch event details";
+
+      addToast(errorMessage, "destructive");
     }
   }, [query.error, addToast]);
 
