@@ -60,7 +60,6 @@ const getAllEventsEnhanced = asyncHandler(
       Math.max(1, parseInt(limit || "12", 10))
     );
     const skip = (pageNum - 1) * limitNum;
-
     const match: any = {};
 
     if (category) match.category = { $in: category.split(",") };

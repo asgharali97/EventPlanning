@@ -12,6 +12,7 @@ import AllBookedEvents from "./components/AllBookedEvents";
 import EventDetail from "./components/EventDetail";
 import Host from "./components/Host";
 import ProtectedRoute from "./components/ProtuctedRoutes";
+import HostLandingPage from "./components/hostLandingPage";
 
 const router = createBrowserRouter([
   {
@@ -47,10 +48,18 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/host",
+        path: "/host/become",
         element: (
           <ProtectedRoute>
             <Host />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/host",
+        element: (
+          <ProtectedRoute>
+            <HostLandingPage />
           </ProtectedRoute>
         ),
       },
