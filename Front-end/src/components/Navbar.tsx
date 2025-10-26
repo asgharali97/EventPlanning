@@ -18,6 +18,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const Navbar = () => {
   const { user, clearAuth } = useAuthStore();
+  console.log("Navbar user:", user);
   const { isLoading } = useUser();
   const location = useLocation();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -80,7 +81,7 @@ const Navbar = () => {
           <NavLink to="/my-bookings" className={getNavLinkClass}>
             My bookings
           </NavLink>
-          <NavLink to="/host" className={getNavLinkClass}>
+          <NavLink to="/host/become" className={getNavLinkClass}>
             Host Event
           </NavLink>
         </nav>

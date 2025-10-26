@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { Youtube, Twitter } from "lucide-react";
-import HostVerifyDialog from "./CheckoutFrom";
+import HostVerifyDialog from "./HostVerifactionDialog";
 import StripeProvider from "@/utils/stripe";
 const hostLandingPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

@@ -10,9 +10,10 @@ import Event from "./components/Event";
 import BookedEvents from "./components/BookedEvents";
 import AllBookedEvents from "./components/AllBookedEvents";
 import EventDetail from "./components/EventDetail";
-import Host from "./components/Host";
 import ProtectedRoute from "./components/ProtuctedRoutes";
+import HostProtectedRoute from "./components/HostProtuctedRoute";
 import HostLandingPage from "./components/hostLandingPage";
+import HostDashboard from "./components/host/HostDashboard";
 
 const router = createBrowserRouter([
   {
@@ -51,18 +52,51 @@ const router = createBrowserRouter([
         path: "/host/become",
         element: (
           <ProtectedRoute>
-            <Host />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/host",
-        element: (
-          <ProtectedRoute>
             <HostLandingPage />
           </ProtectedRoute>
         ),
       },
+      {
+        path: "/host/dashboard",
+        element: (
+          <HostProtectedRoute>
+            <HostDashboard />
+          </HostProtectedRoute>
+        ),
+      },
+      // Ready for future host routes:
+      // {
+      //   path: "/host/events",
+      //   element: (
+      //     <HostProtectedRoute>
+      //       <HostEvents />
+      //     </HostProtectedRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/host/events/create",
+      //   element: (
+      //     <HostProtectedRoute>
+      //       <CreateEvent />
+      //     </HostProtectedRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/host/events/:id/edit",
+      //   element: (
+      //     <HostProtectedRoute>
+      //       <EditEvent />
+      //     </HostProtectedRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/host/coupons",
+      //   element: (
+      //     <HostProtectedRoute>
+      //       <HostCoupons />
+      //     </HostProtectedRoute>
+      //   ),
+      // },
       {
         path: "*",
         element: <HeroSection />

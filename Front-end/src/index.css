@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 @font-face {
   font-family: "satoshi-mdedium";
   src: url("./assets/satoshi-otf/Satoshi-Medium.otf") format("opentype");
@@ -238,4 +240,13 @@
 
 .popup::-webkit-scrollbar-thumb:hover {
   background: #35383dc6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

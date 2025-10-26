@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { becomeHost, verifyHostPayment } from '../api/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const HostVerifyDialog = ({ isOpen, onClose }) => {
   const stripe = useStripe();
@@ -20,7 +21,7 @@ const HostVerifyDialog = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
+  const navigate = useNavigate();
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -58,9 +59,9 @@ const HostVerifyDialog = ({ isOpen, onClose }) => {
 
         if (verifyResponse.data) {
           setSuccess(true);
+          navigate('/host/dashboard');
           setTimeout(() => {
             onClose();
-            window.location.reload();
           }, 2000);
         }
       }
@@ -155,7 +156,7 @@ const HostVerifyDialog = ({ isOpen, onClose }) => {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={!stripe || loading || success || user?.role === "host"}
+              disabled={!stripe || loading || success }
               className="flex-1 satoshi-medium cursor-pointer"
             >
               {loading ? (
