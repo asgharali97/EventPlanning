@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtuctedRoutes";
 import HostProtectedRoute from "./components/HostProtuctedRoute";
 import HostLandingPage from "./components/hostLandingPage";
 import HostDashboard from "./components/host/HostDashboard";
+import NotFound from "./components/NotFound";
 
 const router = createBrowserRouter([
   {
@@ -97,9 +98,11 @@ const router = createBrowserRouter([
       //     </HostProtectedRoute>
       //   ),
       // },
+      
+      // 404 - Catch all undefined routes
       {
         path: "*",
-        element: <HeroSection />
+        element: <NotFound />
       }
     ],
   },
