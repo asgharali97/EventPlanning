@@ -15,6 +15,8 @@ import HostProtectedRoute from "./components/HostProtuctedRoute";
 import HostLandingPage from "./components/hostLandingPage";
 import HostDashboard from "./components/host/HostDashboard";
 import NotFound from "./components/NotFound";
+import HostEvents from "./components/host/HostEvents";
+import CreateEvent from "./components/host/CreateEvent";
 
 const router = createBrowserRouter([
   {
@@ -66,22 +68,22 @@ const router = createBrowserRouter([
         ),
       },
       // Ready for future host routes:
-      // {
-      //   path: "/host/events",
-      //   element: (
-      //     <HostProtectedRoute>
-      //       <HostEvents />
-      //     </HostProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: "/host/events/create",
-      //   element: (
-      //     <HostProtectedRoute>
-      //       <CreateEvent />
-      //     </HostProtectedRoute>
-      //   ),
-      // },
+      {
+        path: "/host/events",
+        element: (
+          <HostProtectedRoute>
+            <HostEvents />
+          </HostProtectedRoute>
+        ),
+      },
+      {
+        path: "/host/events/create",
+        element: (
+          <HostProtectedRoute>
+            <CreateEvent />
+          </HostProtectedRoute>
+        ),
+      },
       // {
       //   path: "/host/events/:id/edit",
       //   element: (

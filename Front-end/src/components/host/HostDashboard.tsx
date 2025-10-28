@@ -1,5 +1,6 @@
 import { DashboardLayout } from "./DashboardLayout";
 import { useAuthStore } from "@/store/authStore";
+import { useHostStats, useRecentEvents } from "@/hooks/useHostStats";
 import { Plus } from "lucide-react";
 import {
   IconCalendarWeek,
@@ -10,6 +11,9 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RecentEventCard } from "./RecentEventsCards";
+import axios from "@/lib/axios";
 
 interface StatCardProps {
   title: string;
@@ -17,9 +21,38 @@ interface StatCardProps {
   icon: React.ReactNode;
   trend?: string;
   trendUp?: boolean;
+  isLoading?: boolean;
 }
 
-function StatCard({ title, value, icon, trend, trendUp }: StatCardProps) {
+interface QuickActionProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+}
+
+function StatCard({
+  title,
+  value,
+  icon,
+  trend,
+  trendUp,
+  isLoading,
+}: StatCardProps) {
+ if (isLoading) {
+    return (
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-12 w-12 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 hover:shadow-md transition-shadow duration-200">
       <div className="flex items-start justify-between">
@@ -55,13 +88,6 @@ function StatCard({ title, value, icon, trend, trendUp }: StatCardProps) {
   );
 }
 
-interface QuickActionProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-}
-
 function QuickActionCard({
   title,
   description,
@@ -95,14 +121,20 @@ function QuickActionCard({
 export default function HostDashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  
+  const { data: stats, isLoading: statsLoading, error: statsError } = useHostStats();
+  const { data: recentEvents, isLoading: eventsLoading, error: eventsError } = useRecentEvents(5);
+  
+  // Debug logs
+  console.log("📊 Stats:", stats);
+  console.log("🔄 Stats Loading:", statsLoading);
+  console.log("❌ Stats Error:", statsError);
+  console.log("📅 Recent Events:", recentEvents);
+  console.log("🔄 Events Loading:", eventsLoading);
 
-  // TODO: Replace with actual data from API
-  const stats = {
-    totalEvents: 12,
-    totalBookings: 348,
-    totalRevenue: "$12,450",
-    activeCoupons: 5,
-  };
+  const formattedRevenue = stats?.totalRevenue
+    ? `$${stats.totalRevenue.toLocaleString()}`
+    : "$0";
 
   return (
     <DashboardLayout>
@@ -118,28 +150,32 @@ export default function HostDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <StatCard
           title="Total Events"
-          value={stats.totalEvents}
+          value={stats?.totalEvents ?? 0}
           icon={<IconCalendarWeek className="w-6 h-6" />}
           trend="+2 this month"
           trendUp={true}
+          isLoading={statsLoading}
         />
         <StatCard
           title="Total Bookings"
-          value={stats.totalBookings}
+          value={stats?.totalBookings ?? 0}
           icon={<IconUsers className="w-6 h-6" />}
           trend="+12% from last month"
           trendUp={true}
+          isLoading={statsLoading}
         />
         <StatCard
           title="Total Revenue"
-          value={stats.totalRevenue}
+          value={formattedRevenue ?? 0}
           icon={<IconCashBanknote className="w-6 h-6" />}
           trend="+8% from last month"
           trendUp={true}
+          isLoading={statsLoading}
         />
         <StatCard
           title="Active Coupons"
-          value={stats.activeCoupons}
+          value={stats?.activeCoupons ?? 0}
+          isLoading={statsLoading}
           icon={<IconTagPlus className="w-6 h-6" />}
         />
       </div>
@@ -172,29 +208,43 @@ export default function HostDashboard() {
             size="sm"
             onClick={() => navigate("/host/events")}
             className="satoshi-medium cursor-pointer"
-            style={{boxShadow:'var(--shadow-m)'}}
           >
             View All
           </Button>
         </div>
-
-        <div className="bg-[var(--card)] border border-dashed border-[var(--border)] rounded-2xl p-12 text-center">
-          <IconCalendarWeek className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-4" />
-          <h3 className="satoshi-medium text-lg text-[var(--foreground)] mb-2">
-            No events yet
-          </h3>
-          <p className="satoshi-regular text-sm text-[var(--muted-foreground)] mb-6 max-w-md mx-auto">
-            Create your first event to start managing bookings and growing your
-            audience.
-          </p>
-          <Button
-            onClick={() => navigate("/host/events/create")}
-            className="satoshi-medium cursor-pointer"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Your First Event
-          </Button>
-        </div>
+        {eventsLoading && (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-xl" />
+            ))}
+          </div>
+        )}
+        {!eventsLoading && recentEvents && recentEvents.length > 0 && (
+          <div className="space-y-4">
+            {recentEvents.map((event) => (
+              <RecentEventCard key={event._id} event={event} />
+            ))}
+          </div>
+        )}
+        {!eventsLoading && (!recentEvents || recentEvents.length === 0) && (
+          <div className="bg-[var(--card)] border border-dashed border-[var(--border)] rounded-2xl p-12 text-center">
+            <IconCalendarWeek className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-4" />
+            <h3 className="satoshi-medium text-lg text-[var(--foreground)] mb-2">
+              No events yet
+            </h3>
+            <p className="satoshi-regular text-sm text-[var(--muted-foreground)] mb-6 max-w-md mx-auto">
+              Create your first event to start managing bookings and growing
+              your audience.
+            </p>
+            <Button
+              onClick={() => navigate("/host/events/create")}
+              className="satoshi-medium cursor-pointer"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Event
+            </Button>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

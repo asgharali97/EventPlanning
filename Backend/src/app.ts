@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
-// middlewares
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
@@ -23,7 +22,6 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// routes
 import authRoutes from "./routes/auth.route.js";
 import eventRoutes from "./routes/event.route.js";
 import eventBookingRoutes from "./routes/eventBooking.route.js";
@@ -33,6 +31,7 @@ import couponsRoutes from './routes/coupons.route.js';
 import eventTags from './routes/eventTags.route.js';
 import ticketRoutes from './routes/ticket.route.js';
 import reviewRoutes from './routes/review.route.js';
+import hostDashboardRoutes from './routes/hostDashboard.route.js';
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
@@ -43,6 +42,7 @@ app.use('/api/review', reviewRoutes);
 app.use('/api/coupon',couponsRoutes);
 app.use('/api/tag',eventTags);
 app.use('/api/ticket', ticketRoutes);
+app.use('/api/host/dashboard', hostDashboardRoutes)
 
 
 export  {app}
