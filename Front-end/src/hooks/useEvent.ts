@@ -39,19 +39,21 @@ interface FetchEventsParams {
   search?: string;
   date?: string;
   sortByPrice?: "asc" | "desc" | null;
+  category?: string
 }
 
-const fetchEvents = async (params: FetchEventsParams) => {
-  const { type, search, date, sortByPrice } = params;
+const fetchEvents = async (params: FetchEventsParams, url: string) => {
+  const { type, search, date, sortByPrice, category } = params;
   const query = new URLSearchParams();
 
   if (search) query.append("q", search);
+  if(category) query.append("category", category)
   if (type && type !== "all") query.append("eventType", type);
   if (date) query.append("date", date);
   if (sortByPrice)
     query.append("sortBy", "price") && query.append("sortDir", sortByPrice);
 
-  const res = await axios.get<{ data: Event[] }>(`events?${query.toString()}`);
+  const res = await axios.get<{ data: Event[] }>(`${url}?${query.toString()}`);
   if (!res.data.data.events) {
     throw new Error("Not found events");
   }
@@ -63,7 +65,7 @@ export const useEvents = () => {
 
   const query = useQuery<Event[]>({
     queryKey: ["events", eventFilter],
-    queryFn: () => fetchEvents(eventFilter),
+    queryFn: () => fetchEvents(eventFilter,"events"),
     select: (data) => {
       let filtered = data;
       if (eventFilter.type !== "all") {
@@ -105,21 +107,51 @@ export const useEvents = () => {
   return query;
 };
 
-// export const useEvents = () => {
-//   const filters = useUIStore((state) => state.eventFilter);
+export const useEventByHostId = () => {
+  const { eventFilter, addToast } = useUIStore();
+  const query = useQuery<Event[]>({
+    queryKey: ["host-events", eventFilter],
+    queryFn: () => fetchEvents(eventFilter,"events/host/me"),
+    select: (data) => {
+      let filtered = data;
+      if (eventFilter.type !== "all") {
+        filtered = filtered.filter(
+          (event) => event.eventType === eventFilter.type
+        );
+      }
 
-//   const { data, isLoading, error } = useQuery({
-//     queryKey: ['events', filters],
-//     queryFn: () => fetchEvents(filters),
-//     staleTime: 1000 * 60 * 5,
-//   });
+      if (eventFilter.search) {
+        filtered = filtered.filter((event) =>
+          event.title.toLowerCase().includes(eventFilter.search.toLowerCase())
+        );
+      }
 
-//   return {
-//     events: data ?? [],
-//     isLoading,
-//     error,
-//   };
-// };
+      if (eventFilter.sortByPrice) {
+        filtered = [...filtered].sort((a, b) =>
+          eventFilter.sortByPrice === "asc"
+            ? a.price - b.price
+            : b.price - a.price
+        );
+      }
+      return filtered;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage =
+        query.error instanceof Error
+          ? query.error.message
+          : "Failed to fetch events";
+
+      addToast(errorMessage, "destructive");
+    }
+  }, [query.error, addToast]);
+
+  return query;
+};
 
 export const useEventById = (eventId: string | undefined) => {
   const { addToast } = useUIStore();

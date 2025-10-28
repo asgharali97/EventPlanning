@@ -1,8 +1,7 @@
 import { DashboardLayout } from "./DashboardLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import axios from "@/lib/axios";
+import { useEventByHostId } from "@/hooks/useEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -27,55 +36,74 @@ import {
   Search,
   Edit,
   Trash2,
-  Eye,
   Calendar,
   MapPin,
   Users,
   DollarSign,
 } from "lucide-react";
-
-interface Event {
-  _id: string;
-  title: string;
-  description?: string;
-  price: number;
-  seats: number;
-  category: string;
-  date: string;
-  time: string;
-  coverImage: string;
-  location: string;
-  eventType: "physical" | "online";
-  createdAt: string;
-}
+import { useUIStore } from "@/store/uiStore";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useHostDeleteEvent } from "@/hooks/useHostEvent";
+import { toast } from "sonner";
+import { Toaster } from "sonner";
 
 export default function HostEvents() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const { eventFilter, setEventFilter } = useUIStore();
+  const [searchTerm, setSearchTerm] = useState(eventFilter.search || "");
 
-  // Fetch host's events
-  const { data: events, isLoading } = useQuery<Event[]>({
-    queryKey: ["host-events"],
-    queryFn: async () => {
-      const response = await axios.get("/events/host/me");
-      return response.data?.data || response.data;
-    },
-  });
+  const { data: events, isLoading } = useEventByHostId();
+  const { mutate: deleteEvent, isPending: isDeleting } = useHostDeleteEvent();
+  const debounceSearch = useDebounce(searchTerm, 500);
 
-  // Filter events based on search and filters
-  const filteredEvents = events?.filter((event) => {
-    const matchesSearch = event.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "all" || event.category === categoryFilter;
-    const matchesType = typeFilter === "all" || event.eventType === typeFilter;
-    return matchesSearch && matchesCategory && matchesType;
-  });
+  useEffect(() => {
+    setEventFilter({ search: debounceSearch });
+  }, [debounceSearch, setEventFilter]);
 
-  // Format date
+  const handleDeleteConfirm = () => {
+    if (!deleteEventId) return;
+    setDeleteEventId(null);
+
+    setTimeout(() => {
+      deleteEvent(deleteEventId, {
+        onSuccess: () => {
+          toast.success("Event deleted successfully", {
+            description: "The event has been permanently removed.",
+          });
+        },
+        onError: (error: any) => {
+          const errorData = error.response?.data;
+          const statusCode = error.response?.status;
+          const errorMessage = errorData?.message || error.message;
+
+          console.log("Error data:", errorData);
+          console.log("Status code:", statusCode);
+          console.log("Error message:", errorMessage);
+
+          if (statusCode === 400 && errorMessage?.startsWith("Cannot")) {
+            toast.error("Cannot delete event", {
+              description: errorMessage,
+            });
+          } else if (statusCode === 404) {
+            toast.error("Event not found", {
+              description: "This event may have already been deleted.",
+            });
+          } else if (statusCode === 403) {
+            toast.error("Permission denied", {
+              description: "You don't have permission to delete this event.",
+            });
+          } else {
+            toast.error("Failed to delete event", {
+              description:
+                errorMessage || "Something went wrong. Please try again.",
+            });
+          }
+        },
+      });
+    }, 100);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -84,14 +112,13 @@ export default function HostEvents() {
     });
   };
 
-  // Check if event is upcoming or past
   const isUpcoming = (dateString: string) => {
     return new Date(dateString) > new Date();
   };
 
   return (
     <DashboardLayout>
-      {/* Header */}
+      <Toaster />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="clash-bold text-3xl md:text-4xl text-[var(--foreground)] mb-2">
@@ -101,48 +128,56 @@ export default function HostEvents() {
             Manage your events, bookings, and coupons
           </p>
         </div>
-        <Button
-          onClick={() => navigate("/host/events/create")}
-          className="satoshi-medium w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Event
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => navigate("/host/events/create")}
+            className="satoshi-medium w-full sm:w-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Event
+          </Button>
+        </div>
       </div>
-
-      {/* Filters */}
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
             <Input
               placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 satoshi-regular"
             />
           </div>
 
-          {/* Category Filter */}
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="satoshi-regular">
-              <SelectValue placeholder="All Categories" />
+          <Select
+            value={eventFilter.category}
+            onValueChange={(value: string) =>
+              setEventFilter({ category: value })
+            }
+          >
+            <SelectTrigger
+              className="w-full satoshi-regular"
+              style={{ boxShadow: "var(--shadow-s)" }}
+            >
+              <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+            <SelectContent className="px-1 satoshi-regular">
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="tech">Tech</SelectItem>
               <SelectItem value="sports">Sports</SelectItem>
               <SelectItem value="arts">Arts</SelectItem>
               <SelectItem value="music">Music</SelectItem>
-              <SelectItem value="food">Food</SelectItem>
               <SelectItem value="health">Health</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
 
-          {/* Type Filter */}
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <Select
+            value={eventFilter.type}
+            onValueChange={(value: "all" | "physical" | "online") =>
+              setEventFilter({ type: value })
+            }
+          >
             <SelectTrigger className="satoshi-regular">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
@@ -154,8 +189,6 @@ export default function HostEvents() {
           </Select>
         </div>
       </div>
-
-      {/* Loading State */}
       {isLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -164,10 +197,8 @@ export default function HostEvents() {
         </div>
       )}
 
-      {/* Events Table/List */}
-      {!isLoading && filteredEvents && filteredEvents.length > 0 && (
+      {!isLoading && events && events.length > 0 && (
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden">
-          {/* Desktop Table View */}
           <div className="hidden lg:block overflow-x-auto">
             <Table>
               <TableHeader>
@@ -185,22 +216,25 @@ export default function HostEvents() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map((event) => (
+                {events.map((event) => (
                   <TableRow
                     key={event._id}
                     className="hover:bg-[var(--muted)]/50 cursor-pointer border-[var(--border)]"
                     onClick={() => navigate(`/host/events/${event._id}`)}
                   >
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={event.coverImage}
-                          alt={event.title}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
+                      <div className="flex items-center gap-4">
+                        <div className="gap-3 h-14 w-20 shrink-0 overflow-hidden rounded border border-border bg-muted sm:h-16 sm:w-28">
+                          <img
+                            src={event.coverImage}
+                            alt={event.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                         <div>
                           <p className="satoshi-medium text-sm text-[var(--foreground)]">
-                            {event.title}
+                            {event.title.slice(0, 30) +
+                              (event.title.length > 30 ? "..." : "")}
                           </p>
                           <p className="satoshi-regular text-xs text-[var(--muted-foreground)] flex items-center gap-1 mt-1">
                             <MapPin className="w-3 h-3" />
@@ -222,9 +256,7 @@ export default function HostEvents() {
                     <TableCell>
                       <Badge
                         variant={
-                          event.eventType === "online"
-                            ? "default"
-                            : "secondary"
+                          event.eventType === "online" ? "default" : "secondary"
                         }
                         className="satoshi-medium"
                       >
@@ -255,20 +287,19 @@ export default function HostEvents() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/host/events/${event._id}`)}
+                          onClick={() =>
+                            navigate(`/host/events/${event._id}/edit`)
+                          }
+                          className="cursor-pointer"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            navigate(`/host/events/${event._id}/edit`)
-                          }
+                          onClick={() => setDeleteEventId(event._id)}
+                          className="cursor-pointer"
                         >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
@@ -278,10 +309,8 @@ export default function HostEvents() {
               </TableBody>
             </Table>
           </div>
-
-          {/* Mobile Card View */}
           <div className="lg:hidden divide-y divide-[var(--border)]">
-            {filteredEvents.map((event) => (
+            {events.map((event) => (
               <div
                 key={event._id}
                 onClick={() => navigate(`/host/events/${event._id}`)}
@@ -345,13 +374,17 @@ export default function HostEvents() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        navigate(`/host/events/${event._id}/edit`)
-                      }
+                      onClick={() => navigate(`/host/events/${event._id}/edit`)}
+                      className="cursor-pointer"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteEventId(event._id)}
+                      className="cursor-pointer"
+                    >
                       <Trash2 className="w-4 h-4 text-red-500" />
                     </Button>
                   </div>
@@ -361,30 +394,60 @@ export default function HostEvents() {
           </div>
         </div>
       )}
-
-      {/* Empty State */}
-      {!isLoading && (!filteredEvents || filteredEvents.length === 0) && (
+      {!isLoading && (!events || events.length === 0) && (
         <div className="bg-[var(--card)] border border-dashed border-[var(--border)] rounded-2xl p-12 text-center">
           <Calendar className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-4" />
           <h3 className="satoshi-medium text-lg text-[var(--foreground)] mb-2">
-            {searchQuery || categoryFilter !== "all" || typeFilter !== "all"
+            {searchTerm ||
+            eventFilter.category !== "all" ||
+            eventFilter.type !== "all"
               ? "No events found"
               : "No events yet"}
           </h3>
           <p className="satoshi-regular text-sm text-[var(--muted-foreground)] mb-6 max-w-md mx-auto">
-            {searchQuery || categoryFilter !== "all" || typeFilter !== "all"
+            {searchTerm ||
+            eventFilter.category !== "all" ||
+            eventFilter.type !== "all"
               ? "Try adjusting your filters"
               : "Create your first event to start managing bookings"}
           </p>
           <Button
             onClick={() => navigate("/host/events/create")}
-            className="satoshi-medium"
+            className="satoshi-medium cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Event
           </Button>
         </div>
       )}
+      <AlertDialog
+        open={!!deleteEventId}
+        onOpenChange={(open) => !open && setDeleteEventId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="satoshi-bold">
+              Delete Event?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="satoshi-regular">
+              This action cannot be undone. This will permanently delete the
+              event and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="satoshi-medium cursor-pointer" disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="satoshi-medium bg-red-500 hover:bg-red-600 cursor-pointer"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

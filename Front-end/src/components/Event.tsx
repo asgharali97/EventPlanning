@@ -34,12 +34,11 @@ import SignIn from "./SignIn";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthStore } from "@/store/authStore";
 import { useDebounce } from "@/hooks/useDebounce";
-
+import { toast } from "sonner";
 const Event: React.FC = () => {
-  const { user } = useAuthStore();
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const { isBookingDialogOpen, setBookingDialog } = useUIStore();
-  const { eventFilter, setEventFilter } = useUIStore();
+  const { isBookingDialogOpen, setBookingDialog, eventFilter, setEventFilter } =
+    useUIStore();
   const { data: events, isLoading, error } = useEvents();
   const navigate = useNavigate();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -67,7 +66,7 @@ const Event: React.FC = () => {
       <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
         <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
           <AlertDescription className="text-lg md:text-xl text-center">
-           {error instanceof Error ? error.message : "Failed to load events"}
+            {error instanceof Error ? error.message : "Failed to load events"}
           </AlertDescription>
         </Alert>
       </div>
@@ -83,7 +82,15 @@ const Event: React.FC = () => {
         </Alert>
         <Button
           className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
-          onClick={() => setEventFilter({type:"all",search:"",date:"",sortByPrice:null})}
+          onClick={() =>
+            setEventFilter({
+              type: "all",
+              search: "",
+              date: "",
+              sortByPrice: null,
+              category: "",
+            })
+          }
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -92,14 +99,14 @@ const Event: React.FC = () => {
     );
 
   const handleEventClick = async (eventId: string) => {
-      navigate(`/event/${eventId}`);
+    toast("this is it", { description: "hy it description of toast" });
+    navigate(`/event/${eventId}`);
   };
 
   const handleBookClick = (event) => {
     setSelectedEvent(event);
     setBookingDialog(true);
   };
-
   return (
     <>
       <div className="satoshi-medium">
@@ -187,6 +194,28 @@ const Event: React.FC = () => {
               <SelectItem value="none">None</SelectItem>
               <SelectItem value="asc">Low to High</SelectItem>
               <SelectItem value="desc">High to Low</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={eventFilter.category}
+            onValueChange={(value: string) =>
+              setEventFilter({ category: value })
+            }
+          >
+            <SelectTrigger
+              className="w-full sm:w-32 satoshi-regular"
+              style={{ boxShadow: "var(--shadow-s)" }}
+            >
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent className="px-1 satoshi-regular">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="tech">tech</SelectItem>
+              <SelectItem value="sports">sports</SelectItem>
+              <SelectItem value="arts">arts</SelectItem>
+              <SelectItem value="music">music</SelectItem>
+              <SelectItem value="health">health</SelectItem>
             </SelectContent>
           </Select>
         </div>

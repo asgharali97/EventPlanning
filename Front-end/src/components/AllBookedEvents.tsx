@@ -9,12 +9,13 @@ import {
   Users,
   CheckCircle,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "./ui/button";
+import { motion } from "motion/react";
 
 interface BookedEvent {
   _id: string;
@@ -40,16 +41,13 @@ interface BookedEvent {
   };
 }
 
-
 const AllBookedEvents: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { data: bookedEvents, isLoading, error } =
-  useGetBookedEvent(user._id);
+  const { data: bookedEvents, isLoading, error } = useGetBookedEvent(user._id);
   const handleEventClick = (eventId: string) => {
     navigate(`/event/${eventId}`);
   };
-
 
   if (isLoading) {
     return (
@@ -70,15 +68,15 @@ const AllBookedEvents: React.FC = () => {
 
   if (error) {
     return (
-       <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
         <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
           <AlertDescription className="text-lg md:text-xl text-center">
-           {error instanceof Error ? error.message : "Failed to load events"}
+            {error instanceof Error ? error.message : "Failed to load events"}
           </AlertDescription>
         </Alert>
         <Button
           className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
-          onClick={() => navigate('/events')}
+          onClick={() => navigate("/events")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -88,30 +86,62 @@ const AllBookedEvents: React.FC = () => {
   }
 
   if (!bookedEvents || bookedEvents.length === 0) {
+    const parentVariant = {
+      hover: {},
+      defualt: {
+        opacity: 0,
+        filter: "blur(5px)",
+        scale: 0.96,
+      },
+    };
+    const childVariant = {
+      default: {
+        x: 0,
+        opacity: 1,
+      },
+      hover: {
+        x: -40,
+        opacity:0,
+      },
+    };
+    const MotionButton = motion(Button);
+    const MotionArrowLeft = motion(ArrowLeft);
     return (
-     <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
+      <div className="py-8 flex flex-col items-center justify-center min-h-[40vh]">
         <Alert className="flex justify-center border-none bg-transparent satoshi-regular">
           <AlertDescription className="text-lg md:text-xl text-center">
             You haven't booked any events yet. Start exploring events to make
-              your first booking!
+            your first booking!
           </AlertDescription>
         </Alert>
-        <Button
-          className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
-          onClick={() => navigate('/events')}
+        <MotionButton
+          variants={parentVariant}
+          initial="default"
+          animate={{
+            opacity: 1,
+            filter: "blur(0px)",
+          }}
+          whileHover="hover"
+          transition={{
+            duration: 0.3,
+            ease: "easeInOut",
+          }}
+          className="mt-6 satoshi-medium shadow-sm cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+          onClick={() => navigate("/events")}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-            Book Events
-        </Button>
+          <MotionArrowLeft className="w-4 h-4 mr-2" variants={childVariant} 
+          />
+          Book Events
+        </MotionButton>
       </div>
     );
   }
 
-  const events = bookedEvents.map((event) =>{
-    const bookedEvent = event.eventId
-    const bookedEventDetail = event
-     return [bookedEvent,bookedEventDetail]
-  })
+  const events = bookedEvents.map((event) => {
+    const bookedEvent = event.eventId;
+    const bookedEventDetail = event;
+    return [bookedEvent, bookedEventDetail];
+  });
   return (
     <div className="w-full min-h-screen bg-[var(--background)]">
       <div className="max-w-7xl mx-auto">
@@ -119,15 +149,15 @@ const AllBookedEvents: React.FC = () => {
           <h1 className="text-2xl font-bold satoshi-bold text-[var(--foreground)]">
             My Bookings
           </h1>
-           <p className="mt-2 text-[var(--muted-foreground)] satoshi-regular">
-            {bookedEvents.length} {bookedEvents.length === 1 ? "booking" : "bookings"} found
+          <p className="mt-2 text-[var(--muted-foreground)] satoshi-regular">
+            {bookedEvents.length}{" "}
+            {bookedEvents.length === 1 ? "booking" : "bookings"} found
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
-         
           {events.map((event: BookedEvent) => {
-            const bookedEvent = event[0]
-            const booking = event[1]
+            const bookedEvent = event[0];
+            const booking = event[1];
             const isPaid = booking.paymentStatus === "paid";
             return (
               <article
@@ -146,7 +176,7 @@ const AllBookedEvents: React.FC = () => {
                     {isPaid ? (
                       <span className="bg-[var(--foreground)] text-[var(--popover)] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
                         <CheckCircle className="w-3.5 h-3.5" />
-                        Paid 
+                        Paid
                       </span>
                     ) : (
                       <span className="bg-[var(--primary)] text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
@@ -211,7 +241,8 @@ const AllBookedEvents: React.FC = () => {
                           Tickets
                         </p>
                         <p className="text-sm satoshi-medium text-[var(--foreground)]">
-                          {booking.numberOfTickets} {booking.numberOfTickets === 1 ? "ticket" : "tickets"}
+                          {booking.numberOfTickets}{" "}
+                          {booking.numberOfTickets === 1 ? "ticket" : "tickets"}
                         </p>
                       </div>
                     </div>

@@ -14,6 +14,7 @@ interface UIState {
     search: string;
     date?: string; 
     sortByPrice: 'asc' | 'desc' | null;
+    category: string
   };
   toasts: Toast[];
   isAppLoading: boolean;
@@ -28,7 +29,7 @@ interface UIState {
 export const useUIStore = create<UIState>((set) => ({
   isBecomeHostDialogOpen: false,
   isBookingDialogOpen: false,
-  eventFilter: { type: 'all', search: '', date: undefined, sortByPrice: null },
+  eventFilter: { type: 'all', search: '', date: undefined, sortByPrice: null, category: '' },
   toasts: [],
   isAppLoading: false,
   setBecomeHostDialog: (open) => set({ isBecomeHostDialogOpen: open }),

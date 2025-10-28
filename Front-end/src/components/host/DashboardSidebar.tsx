@@ -95,7 +95,7 @@ function DashboardSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-4 py-3 border-t border-[var(--border)]">
+            <div className="flex items-center gap-3 p-2 border-t border-[var(--border)]">
               <img src={user?.avatar} alt="host avatar" className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 rounded-[8px]" />
               <div className="flex-1 min-w-0">
                 <p className="satoshi-medium text-sm text-[var(--foreground)] truncate">

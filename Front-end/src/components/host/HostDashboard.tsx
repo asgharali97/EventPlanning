@@ -125,12 +125,6 @@ export default function HostDashboard() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useHostStats();
   const { data: recentEvents, isLoading: eventsLoading, error: eventsError } = useRecentEvents(5);
   
-  // Debug logs
-  console.log("📊 Stats:", stats);
-  console.log("🔄 Stats Loading:", statsLoading);
-  console.log("❌ Stats Error:", statsError);
-  console.log("📅 Recent Events:", recentEvents);
-  console.log("🔄 Events Loading:", eventsLoading);
 
   const formattedRevenue = stats?.totalRevenue
     ? `$${stats.totalRevenue.toLocaleString()}`

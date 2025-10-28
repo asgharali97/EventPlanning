@@ -33,6 +33,6 @@ router.route("/update-event/:eventId").patch(
   ]),
   updateEvent
 );
-router.route("/delete-event").delete(verifyJWT, isHost, deleteEvent);
+router.route("/delete-event/:eventId").delete(verifyJWT, isHost, deleteEvent);
 
 export default router;

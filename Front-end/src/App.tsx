@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import background from "/background.png";
 import { useUser } from "@/hooks/useUser";
 import Container from "@/components/Container";
+import { Toaster } from "sonner"
 
 function App() {
   useUser();
@@ -14,7 +15,7 @@ function App() {
     "/host/coupons",
     "/host/settings",
   ];
-
+  
   const shouldHideNavbar = hideNavbarRoutes.some((route) =>
     location.pathname.startsWith(route)
   );
@@ -44,6 +45,7 @@ function App() {
         {!shouldHideNavbar && <Navbar />}
         {!shouldHideNavbar ? (
           <Container>
+            <Toaster/>
             <Outlet />
           </Container>
         ) : (

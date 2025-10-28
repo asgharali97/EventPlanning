@@ -280,7 +280,7 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId } = req.body;
+  const { eventId } = req.params;
 
   if (!eventId) {
     throw new ApiError(400, "Event id is a required field");
@@ -293,10 +293,10 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     status: "confirmed" 
   });
 
-  if (bookingCount > 0) {
-    throw new ApiError(400, 
-      `Cannot Delete Event whens ${bookingCount} booking(s) exist. Please contact support or cancel existing bookings first.`
-    );
+   const isUpcoming = new Date(event?.date) > new Date();
+
+  if (bookingCount > 0 && isUpcoming) {
+     return res.status(400).json(new ApiError(400, "Cannot delete event with confirmed bookings"));
   }
 
   const userId = (req as any).user?._id;

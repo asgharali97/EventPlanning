@@ -26,10 +26,8 @@ export const useHostStats = () => {
     queryFn: async ()=>{
      try {
        const data = await axios.get(`/host/dashboard/stats`);
-       console.log(data)
        const res = data.data.data || data.data
-       console.log(res)
-       
+
        return res as HostStats
      } catch (error) {
       console.log('useHostStats error', error)
