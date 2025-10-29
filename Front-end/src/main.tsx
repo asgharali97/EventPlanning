@@ -76,14 +76,14 @@ const router = createBrowserRouter([
           </HostProtectedRoute>
         ),
       },
-      // {
-      //   path: "/host/events/create",
-      //   element: (
-      //     <HostProtectedRoute>
-      //       <CreateEvent />
-      //     </HostProtectedRoute>
-      //   ),
-      // },
+      {
+        path: "/host/events/create",
+        element: (
+          <HostProtectedRoute>
+            <CreateEvent />
+          </HostProtectedRoute>
+        ),
+      },
       // {
       //   path: "/host/events/:id/edit",
       //   element: (

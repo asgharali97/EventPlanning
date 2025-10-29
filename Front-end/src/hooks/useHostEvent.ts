@@ -39,4 +39,28 @@ const useHostDeleteEvent = () => {
   })
 };
 
-export { useHostDeleteEvent };
+ const useCreateEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (eventData: any) => {
+      
+      const response = await axios.post('/host/create-event', eventData);
+      
+      console.log("Create event response:", response.data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      console.log(" Event created successfully:", data);
+      queryClient.invalidateQueries({ queryKey: ['host-events'] });
+      queryClient.invalidateQueries({ queryKey: ['hostStats'] });
+      queryClient.invalidateQueries({ queryKey: ['recentEvents'] });
+    },
+    onError: (error: any) => {
+      console.error(" Create event error:", error);
+      console.error(" Error response:", error.response?.data);
+    },
+  });
+};
+
+export { useHostDeleteEvent, useCreateEvent };
