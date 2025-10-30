@@ -17,7 +17,6 @@ interface EventQueryParams {
 
 const getEventByHostId = asyncHandler(async (req: Request, res: Response) => {
   const hostId = (req as any).user?._id;
-  console.log(req.user)
   if (!hostId) {
     throw new ApiError(400, "UnAuthorized: User not found");
   }

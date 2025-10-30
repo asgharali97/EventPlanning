@@ -293,7 +293,7 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     eventId: eventId, 
     status: "confirmed" 
   });
-
+  //  @ts-ignore
    const isUpcoming = new Date(event?.date) > new Date();
 
   if (bookingCount > 0 && isUpcoming) {

@@ -29,9 +29,8 @@ const getHostStats = asyncHandler(async (req, res) => {
         expiresAt: { $gt: new Date() },
       }),
     ]);
-
-  // @ts-ignore
-  const totalRevenue = bookings.reduce(
+    
+    const totalRevenue = bookings.reduce(
     (sum, booking) => sum + booking.totalAmount,
     0
   );
@@ -50,7 +49,7 @@ const getHostStats = asyncHandler(async (req, res) => {
 });
 
 const getRecentEvents = asyncHandler(async (req, res) => {
-  const hostId = req.user._id;
+  const hostId = (req as any).user?._id;;
   if(!hostId){
      throw new ApiError(401,"Unauthorized: User not found");
   }
