@@ -1,5 +1,8 @@
 import { Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 interface SectionCardProps {
   title: string;
@@ -52,6 +55,71 @@ export function ErrorMessage({ message }: ErrorMessageProps) {
     <p className="satoshi-regular text-xs text-red-500 mt-1">
       {message}
     </p>
+  );
+}
+
+interface TagsInputProps {
+  tags: string[];
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
+}
+
+export function TagsInput({ tags, onChange, placeholder = "Add a tag..." }: TagsInputProps) {
+  const [inputValue, setInputValue] = useState("");
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && inputValue.trim()) {
+      e.preventDefault();
+      
+      if (tags.includes(inputValue.trim())) {
+        return;
+      }
+
+      onChange([...tags, inputValue.trim()]);
+      setInputValue("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    onChange(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  return (
+    <div>
+      <Input
+        type="text"
+        placeholder={placeholder}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleAddTag}
+        className="satoshi-regular bg-[var(--background)] mb-3"
+      />
+      
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag, index) => (
+            <Badge
+              key={index}
+              variant="secondary"
+              className="satoshi-medium px-3 py-1 flex items-center gap-2"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="hover:text-red-500 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      
+      <FormDescription>
+        Press Enter to add a tag. Click the X to remove.
+      </FormDescription>
+    </div>
   );
 }
 
@@ -132,7 +200,6 @@ export function ImageUpload({
   );
 }
 
-// Page Header
 interface PageHeaderProps {
   title: string;
   description: string;

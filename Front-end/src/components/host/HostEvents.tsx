@@ -220,7 +220,7 @@ export default function HostEvents() {
                   <TableRow
                     key={event._id}
                     className="hover:bg-[var(--muted)]/50 cursor-pointer border-[var(--border)]"
-                    onClick={() => navigate(`/host/events/${event._id}`)}
+                    onClick={() => navigate(`/host/events/${event._id}/edit`)}
                   >
                     <TableCell>
                       <div className="flex items-center gap-4">
@@ -313,7 +313,7 @@ export default function HostEvents() {
             {events.map((event) => (
               <div
                 key={event._id}
-                onClick={() => navigate(`/host/events/${event._id}`)}
+                onClick={() => navigate(`/host/events/${event._id}/edit`)}
                 className="p-4 hover:bg-[var(--muted)]/50 cursor-pointer"
               >
                 <div className="flex gap-4">
@@ -412,7 +412,7 @@ export default function HostEvents() {
               : "Create your first event to start managing bookings"}
           </p>
           <Button
-            onClick={() => navigate("/host/events/create")}
+            onClick={() => navigate("/host/events")}
             className="satoshi-medium cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" />

@@ -329,4 +329,20 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, "Event deleted successfully", { eventId }));
 });
 
-export { createEvent, updateEvent, deleteEvent };
+const getHostEventById = asyncHandler(async(req: Request, res: Response) => {
+  const {eventId} = req.params;
+
+  if(!eventId){
+    throw new ApiError(400, "Event id is a required field");
+  }
+
+  const event = await Event.findById(eventId);
+  console.log(event)
+  if(!event){
+     throw new ApiError(404, "Event not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, "Event found successfully", event));
+});
+
+export { createEvent, updateEvent, deleteEvent, getHostEventById };

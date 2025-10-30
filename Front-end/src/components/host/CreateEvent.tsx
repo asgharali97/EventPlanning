@@ -1,7 +1,11 @@
 import { DashboardLayout } from "./DashboardLayout";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCreateEvent } from "@/hooks/useHostEvent";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useCreateEvent,
+  useUpdateEvent,
+  useGetEeventByHostId,
+} from "@/hooks/useHostEvent";
 import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +25,7 @@ import {
   ErrorMessage,
   ImageUpload,
   PageHeader,
+  TagsInput,
 } from "./HostComponents";
 
 interface EventFormData {
@@ -36,15 +41,23 @@ interface EventFormData {
   onlineLink?: string;
   onlinePlatform?: string;
   onlinePassword?: string;
+  tags: string[];
 }
 
 interface FormErrors {
   [key: string]: string;
 }
 
-export default function CreateEvent() {
+export default function CreateOrEditEvent() {
   const navigate = useNavigate();
-  const { mutate: createEvent, isPending } = useCreateEvent();
+  const { eventId } = useParams<{ eventId: string }>();
+  const isEditMode = !!eventId;
+
+  const { mutate: createEvent, isPending: isCreating } = useCreateEvent();
+  const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+
+  const { data: existingEvent, isLoading: isLoadingEvent } =
+    useGetEeventByHostId(eventId);
 
   const [formData, setFormData] = useState<EventFormData>({
     title: "",
@@ -59,12 +72,46 @@ export default function CreateEvent() {
     onlineLink: "",
     onlinePlatform: "",
     onlinePassword: "",
+    tags: [],
   });
 
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const formatedTime = (time: string) => {
+    const [hours, minutes] = time?.split(":").map(Number);
+    const hour12 = hours % 12;
+    return `${hour12.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  useEffect(() => {
+    if (isEditMode && existingEvent && !isLoadingEvent) {
+      setFormData({
+        title: existingEvent.title || "",
+        description: existingEvent.description || "",
+        price: existingEvent.price || 0,
+        seats: existingEvent.seats || 0,
+        category: existingEvent.category || "tech",
+        date: existingEvent.date
+          ? new Date(existingEvent.date).toISOString().split("T")[0]
+          : "",
+        time: formatedTime(existingEvent.time) || "",
+        location: existingEvent.location || "",
+        eventType: existingEvent.eventType || "physical",
+        onlineLink: existingEvent.onlineDetails?.link || "",
+        onlinePlatform: existingEvent.onlineDetails?.platform || "",
+        onlinePassword: existingEvent.onlineDetails?.password || "",
+        tags: existingEvent.tags || [],
+      });
+
+      if (existingEvent.coverImage) {
+        setImagePreview(existingEvent.coverImage);
+      }
+    }
+  }, [isEditMode, existingEvent]);
 
   const handleChange = (field: keyof EventFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -121,7 +168,7 @@ export default function CreateEvent() {
       newErrors.description = "Description must be at least 10 characters";
     }
 
-    if (!coverImage) {
+    if (!isEditMode && !coverImage) {
       newErrors.coverImage = "Cover image is required";
     }
 
@@ -160,6 +207,7 @@ export default function CreateEvent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
       return;
@@ -176,11 +224,15 @@ export default function CreateEvent() {
     submitData.append("time", formData.time);
     submitData.append("location", formData.location);
     submitData.append("eventType", formData.eventType);
+    if (formData.tags && formData.tags.length > 0) {
+      formData.tags.forEach((tag) => {
+        submitData.append("tags[]", tag);
+      });
+    }
 
     if (coverImage) {
       submitData.append("coverImage", coverImage);
     }
-
     if (formData.eventType === "online" && formData.onlineLink) {
       submitData.append("onlineDetails[link]", formData.onlineLink);
       if (formData.onlinePlatform) {
@@ -190,28 +242,64 @@ export default function CreateEvent() {
         submitData.append("onlineDetails[password]", formData.onlinePassword);
       }
     }
-    createEvent(submitData, {
-      onSuccess: () => {
-        toast.success("Event created successfully!", {
-          description: "Your event is now live and visible to users.",
-        });
-        navigate("/host/events");
-      },
-      onError: (error: any) => {
-        toast.error("Failed to create event", {
-          description: error.response?.data?.message || "Something went wrong",
-        });
-      },
-    });
+
+    if (isEditMode && eventId) {
+      updateEvent(
+        { eventId, formData: submitData },
+        {
+          onSuccess: () => {
+            toast.success("Event updated successfully!");
+            navigate("/host/events");
+          },
+          onError: (error: any) => {
+            toast.error("Failed to update event", {
+              description:
+                error.response?.data?.message || "Something went wrong",
+            });
+          },
+        }
+      );
+    } else {
+      createEvent(submitData, {
+        onSuccess: () => {
+          toast.success("Event created successfully!", {
+            description: "Your event is now live and visible to users.",
+          });
+          navigate("/host/events");
+        },
+        onError: (error: any) => {
+          toast.error("Failed to create event", {
+            description:
+              error.response?.data?.message || "Something went wrong",
+          });
+        },
+      });
+    }
   };
+
+  const isPending = isCreating || isUpdating;
+
+  if (isEditMode && isLoadingEvent) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--muted-foreground)]" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <Toaster position="top-right" richColors closeButton />
 
       <PageHeader
-        title="Create New Event"
-        description="Fill in the details below to create your event"
+        title={isEditMode ? "Edit Event" : "Create New Event"}
+        description={
+          isEditMode
+            ? "Update your event details"
+            : "Fill in the details below to create your event"
+        }
         onBack={() => navigate("/host/events")}
       />
 
@@ -265,13 +353,28 @@ export default function CreateEvent() {
               </FormDescription>
               <ErrorMessage message={errors.description} />
             </div>
+
             <div>
-              <FormLabel required>Cover Image</FormLabel>
+              <FormLabel required={!isEditMode}>Cover Image</FormLabel>
               <ImageUpload
                 preview={imagePreview}
                 onFileSelect={handleImageSelect}
                 onRemove={handleImageRemove}
                 error={errors.coverImage}
+              />
+              {isEditMode && !coverImage && (
+                <FormDescription>
+                  Leave empty to keep the current image
+                </FormDescription>
+              )}
+            </div>
+
+            <div>
+              <FormLabel>Tags (optional)</FormLabel>
+              <TagsInput
+                tags={formData.tags}
+                onChange={(tags) => handleChange("tags", tags)}
+                placeholder="Add tags like 'networking', 'workshop', etc..."
               />
             </div>
           </div>
@@ -432,8 +535,10 @@ export default function CreateEvent() {
             {isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating...
+                {isEditMode ? "Updating..." : "Creating..."}
               </>
+            ) : isEditMode ? (
+              "Update Event"
             ) : (
               "Create Event"
             )}

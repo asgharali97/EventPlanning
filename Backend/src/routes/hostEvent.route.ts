@@ -6,6 +6,7 @@ import {
   createEvent,
   deleteEvent,
   updateEvent,
+  getHostEventById,
 } from "../controllers/hostEvent.controller.js";
 
 
@@ -34,5 +35,6 @@ router.route("/update-event/:eventId").patch(
   updateEvent
 );
 router.route("/delete-event/:eventId").delete(verifyJWT, isHost, deleteEvent);
+router.route("/:eventId").get(verifyJWT, isHost, getHostEventById);
 
 export default router;
