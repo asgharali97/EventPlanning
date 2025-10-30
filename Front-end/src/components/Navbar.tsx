@@ -80,7 +80,9 @@ const Navbar = () => {
           <NavLink to="/my-bookings" className={getNavLinkClass}>
             My bookings
           </NavLink>
-          <NavLink to="/host/become" className={getNavLinkClass}>
+          <NavLink to={
+            user && user.role === "host" ? "/host/dashboard" : "/host/become"
+          } className={getNavLinkClass}>
             Host Event
           </NavLink>
         </nav>

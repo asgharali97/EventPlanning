@@ -48,6 +48,7 @@ const AllBookedEvents: React.FC = () => {
   const handleEventClick = (eventId: string) => {
     navigate(`/event/${eventId}`);
   };
+  console.log(bookedEvents, isLoading, error);
 
   if (isLoading) {
     return (

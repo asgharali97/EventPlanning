@@ -1,21 +1,9 @@
 import { DashboardLayout } from "./DashboardLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useCreateEvent } from "@/hooks/useHostEvent";
 import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,61 +13,73 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import RichTextEditor from "./RichTextEditor";
-import { Upload, X, Loader2, ArrowLeft } from "lucide-react";
-import axios from "@/lib/axios";
+import { Loader2 } from "lucide-react";
+import {
+  SectionCard,
+  FormLabel,
+  FormDescription,
+  ErrorMessage,
+  ImageUpload,
+  PageHeader,
+} from "./HostComponents";
 
-const eventSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  price: z.coerce.number().min(0, "Price must be positive"),
-  seats: z.coerce.number().min(1, "Must have at least 1 seat"),
-  category: z.enum(["tech", "sports", "arts", "music", "food", "health", "other"]),
-  date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
-  location: z.string().min(3, "Location is required"),
-  coverImage: z.string().url("Cover image is required"),
-  eventType: z.enum(["physical", "online"]),
-  onlineLink: z.string().optional(),
-  onlinePlatform: z.string().optional(),
-  onlinePassword: z.string().optional(),
-});
+interface EventFormData {
+  title: string;
+  description: string;
+  price: number;
+  seats: number;
+  category: string;
+  date: string;
+  time: string;
+  location: string;
+  eventType: "physical" | "online";
+  onlineLink?: string;
+  onlinePlatform?: string;
+  onlinePassword?: string;
+}
 
-type EventFormData = z.infer<typeof eventSchema>;
+interface FormErrors {
+  [key: string]: string;
+}
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-
-  const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      price: 0,
-      seats: 50,
-      category: "tech",
-      date: "",
-      time: "",
-      location: "",
-      coverImage: "",
-      eventType: "physical",
-      onlineLink: "",
-      onlinePlatform: "",
-      onlinePassword: "",
-    },
-  });
-
-  const isOnline = form.watch("eventType") === "online";
-
   const { mutate: createEvent, isPending } = useCreateEvent();
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [formData, setFormData] = useState<EventFormData>({
+    title: "",
+    description: "",
+    price: 0,
+    seats: 0,
+    category: "tech",
+    date: "",
+    time: "",
+    location: "",
+    eventType: "physical",
+    onlineLink: "",
+    onlinePlatform: "",
+    onlinePassword: "",
+  });
 
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const handleChange = (field: keyof EventFormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleImageSelect = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error("Please select an image file");
       return;
     }
 
@@ -88,68 +88,109 @@ export default function CreateEvent() {
       return;
     }
 
-    setIsUploadingImage(true);
+    setCoverImage(file);
 
-    // try {
-    //   const formData = new FormData();
-    //   formData.append("image", file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
 
-    //   const response = await axios.post("/upload", formData, {
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   });
-
-    //   const imageUrl = response.data?.data?.url || response.data?.url;
-      
-    //   form.setValue("coverImage", imageUrl);
-    //   setImagePreview(imageUrl);
-      
-    //   toast.success("Image uploaded successfully");
-    // } catch (error: any) {
-    //   toast.error("Failed to upload image", {
-    //     description: error.response?.data?.message || "Try again",
-    //   });
-    // } finally {
-    //   setIsUploadingImage(false);
-    // }
+    if (errors.coverImage) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.coverImage;
+        return newErrors;
+      });
+    }
   };
 
-  const handleRemoveImage = () => {
-    form.setValue("coverImage", "");
-    setImagePreview("");
+  const handleImageRemove = () => {
+    setCoverImage(null);
+    setImagePreview(null);
   };
 
-  const onSubmit = (data: EventFormData) => {
-    // Validate date is in future
-    const eventDate = new Date(data.date);
-    if (eventDate < new Date()) {
-      toast.error("Event date must be in the future");
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.title || formData.title.length < 3) {
+      newErrors.title = "Title must be at least 3 characters";
+    }
+
+    if (!formData.description || formData.description.length < 10) {
+      newErrors.description = "Description must be at least 10 characters";
+    }
+
+    if (!coverImage) {
+      newErrors.coverImage = "Cover image is required";
+    }
+
+    if (!formData.date) {
+      newErrors.date = "Date is required";
+    } else {
+      const eventDate = new Date(formData.date);
+      if (eventDate < new Date()) {
+        newErrors.date = "Event date must be in the future";
+      }
+    }
+
+    if (!formData.time) {
+      newErrors.time = "Time is required";
+    }
+
+    if (!formData.location || formData.location.length < 3) {
+      newErrors.location = "Location is required";
+    }
+
+    if (formData.price < 0) {
+      newErrors.price = "Price must be positive";
+    }
+
+    if (formData.seats < 1) {
+      newErrors.seats = "Must have at least 1 seat";
+    }
+
+    if (formData.eventType === "online" && !formData.onlineLink) {
+      newErrors.onlineLink = "Meeting link is required for online events";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
       return;
     }
 
-    const payload: any = {
-      title: data.title,
-      description: data.description,
-      price: data.price,
-      seats: data.seats,
-      category: data.category,
-      date: data.date,
-      time: data.time,
-      location: data.location,
-      coverImage: data.coverImage,
-      eventType: data.eventType,
-    };
+    const submitData = new FormData();
 
-    if (data.eventType === "online" && data.onlineLink) {
-      payload.onlineDetails = {
-        link: data.onlineLink,
-        platform: data.onlinePlatform,
-        password: data.onlinePassword,
-      };
+    submitData.append("title", formData.title);
+    submitData.append("description", formData.description);
+    submitData.append("price", formData.price.toString());
+    submitData.append("seats", formData.seats.toString());
+    submitData.append("category", formData.category);
+    submitData.append("date", formData.date);
+    submitData.append("time", formData.time);
+    submitData.append("location", formData.location);
+    submitData.append("eventType", formData.eventType);
+
+    if (coverImage) {
+      submitData.append("coverImage", coverImage);
     }
 
-    createEvent(payload, {
+    if (formData.eventType === "online" && formData.onlineLink) {
+      submitData.append("onlineDetails[link]", formData.onlineLink);
+      if (formData.onlinePlatform) {
+        submitData.append("onlineDetails[platform]", formData.onlinePlatform);
+      }
+      if (formData.onlinePassword) {
+        submitData.append("onlineDetails[password]", formData.onlinePassword);
+      }
+    }
+    createEvent(submitData, {
       onSuccess: () => {
         toast.success("Event created successfully!", {
           description: "Your event is now live and visible to users.",
@@ -167,393 +208,238 @@ export default function CreateEvent() {
   return (
     <DashboardLayout>
       <Toaster position="top-right" richColors closeButton />
-      
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/host/events")}
-          className="mb-4 -ml-2"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Events
-        </Button>
-        <h1 className="clash-bold text-3xl md:text-4xl text-[var(--foreground)] mb-2">
-          Create New Event
-        </h1>
-        <p className="satoshi-regular text-base text-[var(--muted-foreground)]">
-          Fill in the details below to create your event
-        </p>
-      </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6">
-            <h2 className="satoshi-bold text-xl text-[var(--foreground)] mb-6">
-              Basic Information
-            </h2>
 
-            <div className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Event Title *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Tech Conference 2024"
-                        className="satoshi-regular"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      <PageHeader
+        title="Create New Event"
+        description="Fill in the details below to create your event"
+        onBack={() => navigate("/host/events")}
+      />
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <SectionCard title="Basic Information">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-[85%]">
+                <FormLabel required>Event Title</FormLabel>
+                <Input
+                  placeholder="e.g., Tech Conference 2024"
+                  className="satoshi-regular bg-[var(--background)]"
+                  value={formData.title}
+                  onChange={(e) => handleChange("title", e.target.value)}
+                />
+                <ErrorMessage message={errors.title} />
+              </div>
+              <div>
+                <FormLabel required>Category</FormLabel>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => handleChange("category", value)}
+                >
+                  <SelectTrigger className="satoshi-regular bg-[var(--background)] border border-[var(--border)]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tech">Tech</SelectItem>
+                    <SelectItem value="sports">Sports</SelectItem>
+                    <SelectItem value="arts">Arts</SelectItem>
+                    <SelectItem value="music">Music</SelectItem>
+                    <SelectItem value="food">Food</SelectItem>
+                    <SelectItem value="health">Health</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <ErrorMessage message={errors.category} />
+              </div>
+            </div>
+
+            <div>
+              <FormLabel required>Description</FormLabel>
+              <RichTextEditor
+                content={formData.description}
+                onChange={(html) => handleChange("description", html)}
+                placeholder="Describe your event in detail..."
               />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Description *</FormLabel>
-                    <FormControl>
-                      <RichTextEditor
-                        content={field.value}
-                        onChange={field.onChange}
-                        placeholder="Describe your event in detail..."
-                      />
-                    </FormControl>
-                    <FormDescription className="satoshi-regular">
-                      Use the toolbar to format your text with headings, lists, and links
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Category *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="satoshi-regular">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="tech">Tech</SelectItem>
-                        <SelectItem value="sports">Sports</SelectItem>
-                        <SelectItem value="arts">Arts</SelectItem>
-                        <SelectItem value="music">Music</SelectItem>
-                        <SelectItem value="food">Food</SelectItem>
-                        <SelectItem value="health">Health</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="coverImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Cover Image *</FormLabel>
-                    <FormControl>
-                      <div>
-                        {!imagePreview ? (
-                          <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-[var(--border)] rounded-lg cursor-pointer hover:bg-[var(--muted)]/50 transition-colors">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              {isUploadingImage ? (
-                                <>
-                                  <Loader2 className="w-10 h-10 text-[var(--muted-foreground)] animate-spin mb-3" />
-                                  <p className="satoshi-medium text-sm text-[var(--muted-foreground)]">
-                                    Uploading...
-                                  </p>
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="w-10 h-10 text-[var(--muted-foreground)] mb-3" />
-                                  <p className="satoshi-medium text-sm text-[var(--foreground)] mb-1">
-                                    Click to upload cover image
-                                  </p>
-                                  <p className="satoshi-regular text-xs text-[var(--muted-foreground)]">
-                                    PNG, JPG up to 5MB
-                                  </p>
-                                </>
-                              )}
-                            </div>
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              disabled={isUploadingImage}
-                            />
-                          </label>
-                        ) : (
-                          <div className="relative">
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="w-full h-48 object-cover rounded-lg"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2"
-                              onClick={handleRemoveImage}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FormDescription>
+                Use the toolbar to format your text with headings, lists, and
+                links
+              </FormDescription>
+              <ErrorMessage message={errors.description} />
+            </div>
+            <div>
+              <FormLabel required>Cover Image</FormLabel>
+              <ImageUpload
+                preview={imagePreview}
+                onFileSelect={handleImageSelect}
+                onRemove={handleImageRemove}
+                error={errors.coverImage}
               />
             </div>
           </div>
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6">
-            <h2 className="satoshi-bold text-xl text-[var(--foreground)] mb-6">
-              Date & Location
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Date *</FormLabel>
-                    <FormControl>
-                      <Input type="date" className="satoshi-regular" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        </SectionCard>
+        <SectionCard title="Date & Location">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <FormLabel required>Date</FormLabel>
+              <Input
+                type="date"
+                className="satoshi-regular bg-[var(--background)]"
+                value={formData.date}
+                onChange={(e) => handleChange("date", e.target.value)}
               />
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Time *</FormLabel>
-                    <FormControl>
-                      <Input type="time" className="satoshi-regular" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <ErrorMessage message={errors.date} />
+            </div>
+            <div>
+              <FormLabel required>Time</FormLabel>
+              <Input
+                type="time"
+                className="satoshi-regular bg-[var(--background)]"
+                value={formData.time}
+                onChange={(e) => handleChange("time", e.target.value)}
               />
-              <FormField
-                control={form.control}
-                name="eventType"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel className="satoshi-medium">Event Type *</FormLabel>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <FormControl>
-                          <input
-                            type="radio"
-                            value="physical"
-                            checked={field.value === "physical"}
-                            onChange={() => field.onChange("physical")}
-                            className="w-4 h-4"
-                          />
-                        </FormControl>
-                        <span className="satoshi-regular text-sm">Physical Event</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <FormControl>
-                          <input
-                            type="radio"
-                            value="online"
-                            checked={field.value === "online"}
-                            onChange={() => field.onChange("online")}
-                            className="w-4 h-4"
-                          />
-                        </FormControl>
-                        <span className="satoshi-regular text-sm">Online Event</span>
-                      </div>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel className="satoshi-medium">
-                      {isOnline ? "Event Location (for reference)" : "Venue Address *"}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={
-                          isOnline
-                            ? "e.g., Online via Zoom"
-                            : "e.g., 123 Main St, City, State"
-                        }
-                        className="satoshi-regular"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {isOnline && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="onlineLink"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="satoshi-medium">Meeting Link</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="url"
-                            placeholder="https://zoom.us/j/..."
-                            className="satoshi-regular"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+              <ErrorMessage message={errors.time} />
+            </div>
+            <div className="md:col-span-2">
+              <FormLabel required>Event Type</FormLabel>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="physical"
+                    checked={formData.eventType === "physical"}
+                    onChange={() => handleChange("eventType", "physical")}
+                    className="w-4 h-4"
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="onlinePlatform"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="satoshi-medium">Platform</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="e.g., Zoom, Google Meet"
-                            className="satoshi-regular"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                  <span className="satoshi-regular text-sm">
+                    Physical Event
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="online"
+                    checked={formData.eventType === "online"}
+                    onChange={() => handleChange("eventType", "online")}
+                    className="w-4 h-4"
                   />
+                  <span className="satoshi-regular text-sm">Online Event</span>
+                </label>
+              </div>
+              <ErrorMessage message={errors.eventType} />
+            </div>
+            {formData.eventType === "physical" && (
+              <div className="md:col-span-2">
+                <FormLabel required>Venue Address</FormLabel>
+                <Input
+                  placeholder="e.g., 123 Main St, City, State"
+                  className="satoshi-regular bg-[var(--background)]"
+                  value={formData.location}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                />
+                <ErrorMessage message={errors.location} />
+              </div>
+            )}
 
-                  <FormField
-                    control={form.control}
-                    name="onlinePassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="satoshi-medium">
-                          Meeting Password (optional)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            placeholder="Meeting password"
-                            className="satoshi-regular"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+            {formData.eventType === "online" && (
+              <>
+                <div className="md:col-span-2">
+                  <FormLabel required>Meeting Link</FormLabel>
+                  <Input
+                    type="url"
+                    placeholder="https://zoom.us/j/..."
+                    className="satoshi-regular bg-[var(--background)]"
+                    value={formData.onlineLink}
+                    onChange={(e) => handleChange("onlineLink", e.target.value)}
                   />
-                </>
-              )}
+                  <ErrorMessage message={errors.onlineLink} />
+                </div>
+                <div>
+                  <FormLabel>Platform</FormLabel>
+                  <Input
+                    placeholder="e.g., Zoom, Google Meet"
+                    className="satoshi-regular bg-[var(--background)]"
+                    value={formData.onlinePlatform}
+                    onChange={(e) =>
+                      handleChange("onlinePlatform", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <FormLabel>Meeting Password (optional)</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Meeting password"
+                    className="satoshi-regular bg-[var(--background)]"
+                    value={formData.onlinePassword}
+                    onChange={(e) =>
+                      handleChange("onlinePassword", e.target.value)
+                    }
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </SectionCard>
+        <SectionCard title="Pricing & Capacity">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <FormLabel required>Ticket Price ($)</FormLabel>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                className="satoshi-regular bg-[var(--background)]"
+                value={formData.price}
+                onChange={(e) =>
+                  handleChange("price", parseFloat(e.target.value) || 0)
+                }
+              />
+              <FormDescription>Set to 0 for free events</FormDescription>
+              <ErrorMessage message={errors.price} />
+            </div>
+            <div>
+              <FormLabel required>Available Seats</FormLabel>
+              <Input
+                type="number"
+                min="1"
+                placeholder="50"
+                className="satoshi-regular bg-[var(--background)]"
+                value={formData.seats}
+                onChange={(e) =>
+                  handleChange("seats", parseInt(e.target.value) || 1)
+                }
+              />
+              <FormDescription>Maximum number of attendees</FormDescription>
+              <ErrorMessage message={errors.seats} />
             </div>
           </div>
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6">
-            <h2 className="satoshi-bold text-xl text-[var(--foreground)] mb-6">
-              Pricing & Capacity
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Ticket Price ($) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="satoshi-regular"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription className="satoshi-regular">
-                      Set to 0 for free events
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="seats"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="satoshi-medium">Available Seats *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="50"
-                        className="satoshi-regular"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription className="satoshi-regular">
-                      Maximum number of attendees
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/host/events")}
-              disabled={isPending}
-              className="satoshi-medium"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || isUploadingImage}
-              className="satoshi-medium cursor-pointer"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Event"
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+        </SectionCard>
+        <div className="flex items-center justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate("/host/events")}
+            disabled={isPending}
+            className="satoshi-medium"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="satoshi-medium cursor-pointer"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Event"
+            )}
+          </Button>
+        </div>
+      </form>
     </DashboardLayout>
   );
 }

@@ -31,7 +31,7 @@ export function RecentEventCard({ event }: RecentEventCardProps) {
                  hover:shadow-md transition-all duration-200 cursor-pointer group"
     >
       <div className="flex gap-4 p-4">
-        <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--muted)]">
+        <div className="w-42 h-28 rounded overflow-hidden flex-shrink-0 bg-[var(--muted)]">
           <img
             src={event.coverImage}
             alt={event.title}

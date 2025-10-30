@@ -76,7 +76,12 @@ const EventDetail = () => {
       </div>
     );
   }
-
+  const formatedTime = (time: string) => {
+      const [hours, minutes, seconds] = time?.split(':').map(Number);
+      const hour12 = hours % 12;
+      const amPm = hours < 12 ? 'am' : 'pm';
+      return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+    }
   const handleBookClick = (event) => {
     setSelectedEvent(event);
     setBookingDialog(true);
@@ -171,7 +176,7 @@ const EventDetail = () => {
                 </h4>
                 <p className="text-[var(--secondary)] text-sm sm:text-base mt-2 satoshi-regular">
                   {event.date.toString().split("T")[0]} at{" "}
-                  {event.date.toString().split("T")[1].split(".")[0]}
+                  {formatedTime(event.time)}
                 </p>
               </div>
               <div className="sm:text-right">

@@ -32,9 +32,8 @@ import { Badge } from "./ui/badge";
 import BookEvent from "./BookEvent";
 import SignIn from "./SignIn";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { useAuthStore } from "@/store/authStore";
 import { useDebounce } from "@/hooks/useDebounce";
-import { toast } from "sonner";
+
 const Event: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const { isBookingDialogOpen, setBookingDialog, eventFilter, setEventFilter } =
@@ -60,6 +59,13 @@ const Event: React.FC = () => {
           ))}
       </div>
     );
+
+    const formatedTime = (time: string) => {
+      const [hours, minutes] = time?.split(':').map(Number);
+      const hour12 = hours % 12;
+      const amPm = hours < 12 ? 'am' : 'pm';
+      return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+    }
 
   if (error)
     return (
@@ -99,7 +105,6 @@ const Event: React.FC = () => {
     );
 
   const handleEventClick = async (eventId: string) => {
-    toast("this is it", { description: "hy it description of toast" });
     navigate(`/event/${eventId}`);
   };
 
@@ -277,7 +282,7 @@ const Event: React.FC = () => {
                           Time
                         </p>
                         <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
-                          {event.time || "6:00 PM"}
+                          {formatedTime(event.time) || "00"}
                         </p>
                       </div>
                     </div>
