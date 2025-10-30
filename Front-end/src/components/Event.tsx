@@ -260,7 +260,7 @@ const Event: React.FC = () => {
                   </div>
                   {event.description && (
                     <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                      {event.description}
+                        <div dangerouslySetInnerHTML={{__html: event.description || "No description available"}} />
                     </p>
                   )}
                   <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">

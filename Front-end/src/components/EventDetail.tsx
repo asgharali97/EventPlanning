@@ -194,7 +194,7 @@ const EventDetail = () => {
               About This Event
             </h4>
             <p className="text-sm sm:text-base lg:text-lg text-[var(--secondary)] leading-relaxed satoshi-regular">
-              {event.description || "No description available."}
+              <div dangerouslySetInnerHTML={{__html: event.description || "<p>No description available.</p>"}} />
             </p>
           </div>
           <div className="flex gap-2 flex-wrap border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 py-4 sm:py-6">

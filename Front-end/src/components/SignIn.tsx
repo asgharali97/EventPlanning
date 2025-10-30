@@ -55,13 +55,11 @@ const SignIn: React.FC<SignInProps> = ({ isOpen, onClose }) => {
         }, 200);
       }
     } catch (error) {
-      console.error("🔴 Auth error:", error);
       setIsLoading(false);
     }
   };
 
   const handleError = (err: any) => {
-    console.error("🔴 Google login error:", err);
     setIsLoading(false);
   };
 
