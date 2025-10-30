@@ -29,9 +29,10 @@ const getHostStats = asyncHandler(async (req, res) => {
         expiresAt: { $gt: new Date() },
       }),
     ]);
-    
+
     const totalRevenue = bookings.reduce(
-    (sum, booking) => sum + booking.totalAmount,
+      //@ts-ignore
+    (sum, booking) => sum + booking?.totalAmount,
     0
   );
   return res.status(200).json(

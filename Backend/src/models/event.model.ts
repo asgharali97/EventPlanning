@@ -30,7 +30,6 @@ interface IEvent extends Document {
   tags?: string[];
   createdAt: Date;
   updatedAt: Date;
-  totalAmount?:Number;
 }
 
 const evetnSchema = new Schema<IEvent>(
