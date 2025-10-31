@@ -17,6 +17,8 @@ import HostDashboard from "./components/host/HostDashboard";
 import NotFound from "./components/NotFound";
 import HostEvents from "./components/host/HostEvents";
 import CreateEvent from "./components/host/CreateEvent";
+import HostCoupons from "./components/host/HostCoupons";
+import CreateOrEditCoupon from "./components/host/CreateOrEdit";
 
 const router = createBrowserRouter([
   {
@@ -92,24 +94,30 @@ const router = createBrowserRouter([
           </HostProtectedRoute>
         ),
       },
-      // {
-      //   path: "/host/events/:id/edit",
-      //   element: (
-      //     <HostProtectedRoute>
-      //       <EditEvent />
-      //     </HostProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: "/host/coupons",
-      //   element: (
-      //     <HostProtectedRoute>
-      //       <HostCoupons />
-      //     </HostProtectedRoute>
-      //   ),
-      // },
-      
-      // 404 - Catch all undefined routes
+      {
+        path: "/host/coupons",
+        element: (
+          <HostProtectedRoute>
+            <HostCoupons />
+          </HostProtectedRoute>
+        ),
+      },
+      {
+        path: "/host/coupons/create",
+        element: (
+          <HostProtectedRoute>
+            <CreateOrEditCoupon />
+          </HostProtectedRoute>
+        ),
+      },
+      {
+        path: "/host/coupons/:couponId/edit",
+        element: (
+          <HostProtectedRoute>
+            <CreateOrEditCoupon />
+          </HostProtectedRoute>
+        ),
+      },
       {
         path: "*",
         element: <NotFound />

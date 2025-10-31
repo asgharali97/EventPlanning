@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUserById } from "@/hooks/useUser";
 import BookEvent from "./BookEvent";
 import {
-  Tooltip,
+  Tooltip, 
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";

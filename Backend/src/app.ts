@@ -39,7 +39,7 @@ app.use("/api/booking", eventBookingRoutes);
 app.use("/api/host", hostRoutes);
 app.use('/api/host/event', hostEventRoutes);
 app.use('/api/review', reviewRoutes);
-app.use('/api/coupon',couponsRoutes);
+app.use('/api/coupons',couponsRoutes);
 app.use('/api/tag',eventTags);
 app.use('/api/ticket', ticketRoutes);
 app.use('/api/host/dashboard', hostDashboardRoutes)

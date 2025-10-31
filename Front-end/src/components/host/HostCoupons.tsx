@@ -17,16 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast, Toaster } from "sonner";
@@ -41,7 +31,7 @@ import {
   Percent,
   DollarSign,
 } from "lucide-react";
-import { PageHeader } from "./HostComponents";
+import { Alert, PageHeading } from "./HostComponents";
 
 export default function HostCoupons() {
   const navigate = useNavigate();
@@ -106,12 +96,11 @@ export default function HostCoupons() {
     });
   };
 
-  "email":"fsdev41@gmail.com","full_name":"Fs dev",
-
   return (
     <DashboardLayout>
       <Toaster position="top-right" richColors closeButton />
-      <PageHeader heading="Coupons" description="Manage here your coupons" onClick={() => navigate("/host/coupons/create")} buttonChildern="Create coupon" />
+      <PageHeading heading="Coupons" description="Manage here your coupons" onClick={() => navigate("/host/coupons/create")} buttonChildern="Create coupon" />
+      
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
@@ -370,33 +359,7 @@ export default function HostCoupons() {
           </Button>
         </div>
       )}
-      <AlertDialog
-        open={!!deleteCouponId}
-        onOpenChange={(open) => !open && setDeleteCouponId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="satoshi-bold">
-              Delete Coupon?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="satoshi-regular">
-              This action cannot be undone. This will permanently delete the coupon.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="satoshi-medium" disabled={isDeleting}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-              className="satoshi-medium bg-red-500 hover:bg-red-600 cursor-pointer"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Alert  open={!!deleteCouponId} onOpenChange={(open) => !open && setDeleteCouponId(null)} title="Coupon Deleted" description="This action cannot be undone. This will permanently delete the coupon." caneclDisabled={isDeleting} cancelChildern="Cancel" actionChildern={isDeleting ? "Deleting..." : "Delete"} actionClick={handleDeleteConfirm} actionDisabled={isDeleting}/>
     </DashboardLayout>
   );
 }

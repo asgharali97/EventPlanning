@@ -3,6 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { IconPlus } from "@tabler/icons-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SectionCardProps {
   title: string;
@@ -200,6 +211,48 @@ export function ImageUpload({
   );
 }
 
+
+
+interface PageHeader {
+  heading: string;
+  description: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  buttonChildern: string;
+}
+
+export const PageHeading = ({
+  heading,
+  description,
+  icon,
+  onClick,
+  buttonChildern,
+}: PageHeader) => {
+  return (
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="clash-bold text-3xl md:text-4xl text-[var(--foreground)] mb-2">
+            {heading}
+          </h1>
+          <p className="satoshi-regular text-base text-[var(--muted-foreground)]">
+            {description}
+          </p>
+        </div>
+        <Button
+          onClick={onClick}
+          className="satoshi-medium w-full sm:w-auto cursor-pointer"
+        >
+          {buttonChildern}
+          {icon ? icon : <IconPlus className="w-4 h-4 mr-2" />}
+        </Button>
+      </div>
+    </>
+  );
+};
+
+
+
 interface PageHeaderProps {
   title: string;
   description: string;
@@ -241,3 +294,51 @@ export function PageHeader({ title, description, onBack }: PageHeaderProps) {
     </div>
   );
 }
+
+interface AlertProps{
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  description: string
+  cancelChildern: string
+  caneclDisabled?: boolean
+  actionClick: () => void
+  actionDisabled?: boolean
+  actionChildern: string
+
+}
+
+export const Alert = ({open, onOpenChange, title, description, cancelChildern, actionClick, actionDisabled, actionChildern, caneclDisabled} : AlertProps) => {
+  return (
+    <>
+       <AlertDialog
+        open={open}
+        onOpenChange={onOpenChange}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="satoshi-bold">
+              {title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="satoshi-regular">
+              {description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="satoshi-medium" disabled={caneclDisabled}>
+              {cancelChildern}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={actionClick}
+              disabled={actionDisabled}
+              className="satoshi-medium bg-red-500 hover:bg-red-600 cursor-pointer"
+            >
+              {actionChildern}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}
+

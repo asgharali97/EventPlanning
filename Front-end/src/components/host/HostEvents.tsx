@@ -412,7 +412,7 @@ export default function HostEvents() {
               : "Create your first event to start managing bookings"}
           </p>
           <Button
-            onClick={() => navigate("/host/events")}
+            onClick={() => navigate("/host/events/create")}
             className="satoshi-medium cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" />

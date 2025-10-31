@@ -337,6 +337,64 @@ const validateCoupon = asyncHandler(async (req: Request, res: Response) => {
   }));
 });
 
+const getHostCoupons = asyncHandler(async (req: Request, res: Response) => {
+  const hostId = (req as any).user?._id;
+  if (!hostId) {
+    throw new ApiError(401, "HostId is required");
+  }
+  const hostEvents = await Event.find({ hostId }).select('_id');
+  const eventIds = hostEvents.map(event => event._id);
+  if (!hostEvents) {
+    throw new ApiError(404, "Events not found");
+  }
+
+  const coupons = await Coupon.find({ eventId: { $in: eventIds } })
+    .populate('eventId', 'title coverImage')
+    .sort({ createdAt: -1 });
+
+  if (!coupons) {
+    throw new ApiError(400, "Failed to getCoupons");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200,'Host coupons fetched successfully',  coupons)
+  );
+});
+
+const getCouponStats = asyncHandler(async (req: Request, res: Response) => {
+  const hostId = (req as any).user?._id;
+  if (!hostId) {
+    throw new ApiError(401, "HostId is required");
+  }
+  const hostEvents = await Event.find({ hostId }).select('_id');
+  const eventIds = hostEvents.map(event => event._id);
+  if (!hostEvents) {
+    throw new ApiError(404, "Events not found");
+  }
+
+  const [totalCoupons, activeCoupons, totalUsage] = await Promise.all([
+    Coupon.countDocuments({ eventId: { $in: eventIds } }),
+    Coupon.countDocuments({ 
+      eventId: { $in: eventIds },
+      isActive: true,
+      validUntil: { $gt: new Date() }
+    }),
+    Coupon.aggregate([
+      { $match: { eventId: { $in: eventIds } } },
+      { $group: { _id: null, total: { $sum: '$usedCount' } } }
+    ])
+  ]);
+
+  return res.status(200).json(
+    new ApiResponse(200,'Coupon stats fetched successfully', {
+      totalCoupons,
+      activeCoupons,
+      totalUsage: totalUsage[0]?.total || 0
+    })
+  );
+});
+
+
 export {
   createCoupon,
   getEventCoupons,
@@ -345,4 +403,6 @@ export {
   deleteCoupon,
   deactivateCoupon,
   validateCoupon,
+  getHostCoupons,
+  getCouponStats
 };
