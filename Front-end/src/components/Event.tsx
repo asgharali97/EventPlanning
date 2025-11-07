@@ -33,6 +33,7 @@ import BookEvent from "./BookEvent";
 import SignIn from "./SignIn";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useDebounce } from "@/hooks/useDebounce";
+import { IconFilter2Down, IconFilter2X } from "@tabler/icons-react";
 
 const Event: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -42,6 +43,7 @@ const Event: React.FC = () => {
   const navigate = useNavigate();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(eventFilter.search || "");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const debounceSearch = useDebounce(searchTerm, 1000);
 
@@ -60,12 +62,14 @@ const Event: React.FC = () => {
       </div>
     );
 
-    const formatedTime = (time: string) => {
-      const [hours, minutes] = time?.split(':').map(Number);
-      const hour12 = hours % 12;
-      const amPm = hours < 12 ? 'am' : 'pm';
-      return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${amPm}`;
-    }
+  const formatedTime = (time: string) => {
+    const [hours, minutes] = time?.split(":").map(Number);
+    const hour12 = hours % 12;
+    const amPm = hours < 12 ? "am" : "pm";
+    return `${hour12.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")} ${amPm}`;
+  };
 
   if (error)
     return (
@@ -115,7 +119,30 @@ const Event: React.FC = () => {
   return (
     <>
       <div className="satoshi-medium">
-        <div className="flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4">
+        <div className="sm:hidden py-4 flex justify-between gap-4">
+          <Button
+            className="flex itmes-center gap-2 py-2 px-4 border border-[var(--border)] text-md font-medium shadow-[var(--shadow-m)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--card)] hover:text-[var(--foreground)] cursor-pointer"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            {isFilterOpen ? <IconFilter2X /> : <IconFilter2Down />}
+            Filters
+          </Button>
+            <Input
+            placeholder="Search events..."
+            className="w-full satoshi-regular"
+            style={{ boxShadow: "var(--shadow-s)" }}
+            value={searchTerm}
+            onChange={(e: any) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div
+          className={cn(
+            "flex flex-col sm:flex-row gap-4 border-b border-[var(--border)] -mx-8 px-8 py-4",
+            "transition-all duration-300",
+            "sm:flex",
+            isFilterOpen ? "flex" : "hidden" // Toggle on small screens
+          )}
+        >
           <Select
             value={eventFilter.type}
             onValueChange={(value: "all" | "physical" | "online") =>
@@ -135,13 +162,14 @@ const Event: React.FC = () => {
             </SelectContent>
           </Select>
 
-          <Input
+          {!isFilterOpen && 
+          ( <Input
             placeholder="Search events..."
             className="w-full sm:w-48 satoshi-regular"
             style={{ boxShadow: "var(--shadow-s)" }}
             value={searchTerm}
             onChange={(e: any) => setSearchTerm(e.target.value)}
-          />
+          /> )}
 
           <Popover>
             <PopoverTrigger asChild>
@@ -260,7 +288,12 @@ const Event: React.FC = () => {
                   </div>
                   {event.description && (
                     <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                        <div dangerouslySetInnerHTML={{__html: event.description || "No description available"}} />
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            event.description || "No description available",
+                        }}
+                      />
                     </p>
                   )}
                   <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-[var(--border)]">

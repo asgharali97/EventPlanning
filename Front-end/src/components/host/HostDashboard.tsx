@@ -57,21 +57,21 @@ function StatCard({
     <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 hover:shadow-md transition-shadow duration-200">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm satoshi-regular text-[var(--muted-foreground)] mb-1">
+          <p className="text-md  md:text-sm satoshi-mdedium font-medium text-[var(--muted-foreground)] mb-1">
             {title}
           </p>
-          <h3 className="text-3xl satoshi-bold text-[var(--foreground)] mb-2">
+          <h3 className="text-4xl md:text-3xl font-bold satoshi-bold text-[var(--foreground)] mb-2 my-3 md:my-2">
             {value}
           </h3>
           {trend && (
             <div className="flex items-center gap-1">
               <IconTrendingUp3
-                className={`w-3 h-3 ${
+                className={`w-4 h-4 md:w-3 md:h-3 ${
                   trendUp ? "text-green-500" : "text-red-500 rotate-180"
                 }`}
               />
               <span
-                className={`text-xs satoshi-medium ${
+                className={`text-sm md:text-xs satoshi-medium ${
                   trendUp ? "text-green-500" : "text-red-500"
                 }`}
               >

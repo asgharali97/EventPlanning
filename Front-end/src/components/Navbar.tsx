@@ -184,7 +184,7 @@ const Navbar = () => {
                 My bookings
               </NavLink>
               <NavLink
-                to="/host"
+                to="/host/dashboard"
                 className={getMobileNavLinkClass}
                 onClick={closeMobileMenu}
               >
