@@ -150,7 +150,7 @@ src/
 ```
 
 ## Screenshots
-![Screenshot](./src/assets/screenshot.png)
+![Screenshot](./Front-end/src/assets/screenshot.png)
 
 ## Roadmap (Completed & Planned)
 
