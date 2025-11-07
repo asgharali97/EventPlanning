@@ -36,8 +36,6 @@ export const useHostStats = () => {
     }
   })
 }
-
-// 2. Fetch recent events
 export const useRecentEvents = (limit: number = 5) => {
   return useQuery<RecentEvent[]>({
     queryKey: ['recent-events', limit],
@@ -51,7 +49,6 @@ export const useRecentEvents = (limit: number = 5) => {
   });
 };
 
-// 3. Fetch all host events (you might already have this)
 export const useHostEvents = () => {
   return useQuery({
     queryKey: ['host-events'],
@@ -66,7 +63,6 @@ export const useHostEvents = () => {
   });
 };
 
-// Optional: Individual stat hooks if you want granular control
 export const useTotalBookings = () => {
   return useQuery<number>({
     queryKey: ['total-bookings'],

@@ -98,7 +98,7 @@ function QuickActionCard({
     <button
       onClick={onClick}
       className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 
-                 hover:border-[var(--foreground)] hover:shadow-md transition-all duration-200 
+                 hover:border-neutral-400 hover:shadow-md transition-all duration-200 
                  text-left group cursor-pointer"
     >
       <div className="flex items-start gap-4">

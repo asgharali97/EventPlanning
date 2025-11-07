@@ -1,4 +1,4 @@
-import { Calendar, Home, Tag, Settings, LogOut, Sparkles } from "lucide-react";
+import { Calendar, Home, Tag, LogOut, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -28,11 +28,6 @@ const navItems = [
     title: "Coupons",
     url: "/host/coupons",
     icon: Tag,
-  },
-  {
-    title: "Settings",
-    url: "/host/settings",
-    icon: Settings,
   },
 ];
 

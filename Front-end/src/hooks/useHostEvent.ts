@@ -55,7 +55,6 @@ const useCreateEvent = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      console.log(" Event created successfully:", data);
       queryClient.invalidateQueries({ queryKey: ["host-events"] });
       queryClient.invalidateQueries({ queryKey: ["hostStats"] });
       queryClient.invalidateQueries({ queryKey: ["recentEvents"] });
@@ -78,10 +77,6 @@ const useUpdateEvent = () => {
       eventId: string;
       formData: FormData;
     }) => {
-      console.log("📝 Updating event:", eventId);
-
-      // Log FormData contents
-      console.log("FormData entries:");
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
           console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
@@ -99,20 +94,16 @@ const useUpdateEvent = () => {
           },
         }
       );
-
-      console.log("✅ Update event response:", response.data);
       return response.data;
     },
     onSuccess: (data, variables) => {
-      console.log("✅ Event updated successfully:", data);
-      console.log("♻️ Invalidating queries...");
       queryClient.invalidateQueries({ queryKey: ["host-events"] });
       queryClient.invalidateQueries({ queryKey: ["event", variables.eventId] });
       queryClient.invalidateQueries({ queryKey: ["hostStats"] });
     },
     onError: (error: any) => {
-      console.error("❌ Update event error:", error);
-      console.error("❌ Error response:", error.response?.data);
+      console.error("Update event error:", error);
+      console.error("Error response:", error.response?.data);
     },
   });
 };

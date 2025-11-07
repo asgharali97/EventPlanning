@@ -85,7 +85,7 @@ const SignIn: React.FC<SignInProps> = ({ isOpen, onClose }) => {
           <Button
             onClick={() => googleLogin()}
             disabled={isLoading}
-            className="w-full max-w-xs bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] satoshi-medium shadow-md hover:shadow-lg transition-all duration-200 py-6"
+            className="w-full max-w-xs bg-[var(--foreground)] hover:bg-[var(--foreground)] text-[var(--background)] satoshi-medium shadow-[var(--shadow-l)] transition-all duration-200 py-6 cursor-pointer"
           >
             {isLoading ? (
               <>

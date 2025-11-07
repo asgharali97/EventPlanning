@@ -141,7 +141,7 @@ const Navbar = () => {
           ) : (
             <Button
               onClick={() => setIsSignInOpen(true)}
-              className="satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
+              className="satoshi-medium shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
             >
               Sign In
             </Button>

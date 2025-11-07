@@ -26,7 +26,7 @@ export function RecentEventCard({ event }: RecentEventCardProps) {
 
   return (
     <div
-      onClick={() => navigate(`/host/events/${event._id}`)}
+      onClick={() => navigate(`/host/events/${event._id}/edit`)}
       className="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden 
                  hover:shadow-md transition-all duration-200 cursor-pointer group"
     >
@@ -35,7 +35,7 @@ export function RecentEventCard({ event }: RecentEventCardProps) {
           <img
             src={event.coverImage}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-full object-cover"
           />
         </div>
         <div className="flex-1 min-w-0">
