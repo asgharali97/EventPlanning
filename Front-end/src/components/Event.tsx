@@ -161,7 +161,6 @@ const Event: React.FC = () => {
               <SelectItem value="online">Online</SelectItem>
             </SelectContent>
           </Select>
-
           {!isFilterOpen && 
           ( <Input
             placeholder="Search events..."
@@ -170,7 +169,6 @@ const Event: React.FC = () => {
             value={searchTerm}
             onChange={(e: any) => setSearchTerm(e.target.value)}
           /> )}
-
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -263,12 +261,27 @@ const Event: React.FC = () => {
                   <img
                     src={event.coverImage}
                     alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-300 rounded-t-2xl  group-hover:scale-105"
+                    className={`w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105 ${
+                      event.status === "past" || (!event.status && new Date(event.date) < new Date())
+                        ? "opacity-60 grayscale" 
+                        : ""
+                    }`}
                   />
+                  {(event.status === "past" || (!event.status && new Date(event.date) < new Date())) && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-t-2xl">
+                      <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium satoshi-medium">
+                        Past Event
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]">
+                    <h3 className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)] ${
+                      event.status === "past" || (!event.status && new Date(event.date) < new Date()) 
+                        ? "line-through text-[var(--muted-foreground)]" 
+                        : ""
+                    }`}>
                       {event.title}
                     </h3>
                     <div className="flex justify-between">
@@ -354,8 +367,17 @@ const Event: React.FC = () => {
                   onClick={() => {
                     handleBookClick(event);
                   }}
+                  disabled={
+                    event.status === "past" || 
+                    event.status === "canceled" || 
+                    (!event.status && new Date(event.date) < new Date())
+                  }
                 >
-                  Book Now
+                  {event.status === "past" || (!event.status && new Date(event.date) < new Date())
+                    ? "Past Event" 
+                    : event.status === "canceled" 
+                    ? "Canceled" 
+                    : "Book Now"}
                 </Button>
               </div>
             </article>

@@ -32,6 +32,7 @@ interface Event {
   onlineDetails?: OnlineDetails;
   tags?: string[];
   rating?: number;
+  status?: "active" | "past" | "canceled";
 }
 
 interface FetchEventsParams {
@@ -57,6 +58,7 @@ const fetchEvents = async (params: FetchEventsParams, url: string) => {
   if (!res.data.data.events) {
     throw new Error("Not found events");
   }
+  console.log(res.data.data?.events)
   return res.data.data?.events;
 };
 
@@ -87,6 +89,7 @@ export const useEvents = () => {
             : b.price - a.price
         );
       }
+      console.log(filtered)
       return filtered;
     },
     staleTime: 5 * 60 * 1000,

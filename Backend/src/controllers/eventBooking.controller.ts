@@ -45,6 +45,15 @@ const bookEvent = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (!event) {
       throw new ApiError(404, "Event not found");
     }
+    
+    if (event.status === "canceled") {
+      throw new ApiError(400, "This event has been canceled and is no longer available for booking");
+    }
+    
+    if (event.status === "past") {
+      throw new ApiError(400, "This event has already passed and is no longer available for booking");
+    }
+    
     if (event.seats < numberOfTickets) {
       throw new ApiError(400, `Only ${event.seats} seats available`);
     }
@@ -246,7 +255,7 @@ const successPay = asyncHandler(async (req: AuthRequest, res: Response) => {
 
 const getBookedEvents = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = (req.user as any)?._id;
-  const events = await EventBooking.find({ userId }).populate("eventId","title date time location coverImage");
+  const events = await EventBooking.find({ userId }).populate("eventId","title date time location coverImage description category price seats eventType status");
   if (!events) {
     throw new ApiError(404, "No events found");
   }

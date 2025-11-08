@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import asyncHandler from "../utils/asyncHandler.js";
 import Event from "../models/event.model.js";
-import EventBooking from '../models/eventBooking.model.js'
+import EventBooking from "../models/eventBooking.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudaniry.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudaniry.js";
 import User from "../models/user.model.js";
 
 const createEvent = asyncHandler(async (req: Request, res: Response) => {
@@ -28,7 +31,7 @@ const createEvent = asyncHandler(async (req: Request, res: Response) => {
       (req.files as any).coverImage[0]?.path) ||
     undefined;
   console.log(req.files);
-  console.log(req)
+  console.log(req);
   if (!title || !price || !seats || !category || !date || !time || !eventType) {
     throw new ApiError(400, "All fields are required");
   }
@@ -64,6 +67,7 @@ const createEvent = asyncHandler(async (req: Request, res: Response) => {
     coverImage: coverImageFile.url,
     hostId: user._id,
     eventType,
+    status: "active",
   };
 
   if (eventType === "online") {
@@ -123,13 +127,14 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Event not found or you are not the host");
   }
 
-  const bookingCount = await EventBooking.countDocuments({ 
-    eventId: eventId, 
-    status: "confirmed" 
+  const bookingCount = await EventBooking.countDocuments({
+    eventId: eventId,
+    status: "confirmed",
   });
 
   if (bookingCount > 0 && (date || time)) {
-    throw new ApiError(400, 
+    throw new ApiError(
+      400,
       `Cannot change date/time when ${bookingCount} booking(s) exist. Please contact support or cancel existing bookings first.`
     );
   }
@@ -158,7 +163,15 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (category !== undefined) {
-    const validCategories = ["tech", "sports", "arts", "music", "food", "health", "other"];
+    const validCategories = [
+      "tech",
+      "sports",
+      "arts",
+      "music",
+      "food",
+      "health",
+      "other",
+    ];
     if (!validCategories.includes(category)) {
       throw new ApiError(400, "Invalid category");
     }
@@ -226,11 +239,13 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
 
   if (tags !== undefined) {
     if (Array.isArray(tags)) {
-      const newTags = tags.filter(tag => tag?.trim()).map(tag => tag.trim());
-      
+      const newTags = tags
+        .filter((tag) => tag?.trim())
+        .map((tag) => tag.trim());
+
       const existingTags = event.tags || [];
       const mergedTags = [...new Set([...existingTags, ...newTags])];
-      
+
       updateData.tags = mergedTags;
     } else {
       updateData.tags = event.tags || [];
@@ -261,6 +276,16 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "No valid fields provided for update");
   }
 
+  if (updateData.date) {
+    const eventDate = new Date(updateData.date);
+    const now = new Date();
+    if (eventDate < now && event.status !== "canceled") {
+      updateData.status = "past";
+    } else if (eventDate >= now && event.status === "past") {
+      updateData.status = "active";
+    }
+  }
+
   const updatedEvent = await Event.findByIdAndUpdate(
     eventId,
     { $set: updateData },
@@ -271,13 +296,13 @@ const updateEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(500, "Failed to update event");
   }
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, "Event updated successfully", { 
+  res.status(200).json(
+    new ApiResponse(200, "Event updated successfully", {
       event: updatedEvent,
       bookingCount,
-      updatedFields: Object.keys(updateData)
-    }));
+      updatedFields: Object.keys(updateData),
+    })
+  );
 });
 
 const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
@@ -287,24 +312,12 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Event id is a required field");
   }
 
-  const event = await Event.findById(eventId);
-
-  const bookingCount = await EventBooking.countDocuments({ 
-    eventId: eventId, 
-    status: "confirmed" 
-  });
-  //  @ts-ignore
-   const isUpcoming = new Date(event?.date) > new Date();
-
-  if (bookingCount > 0 && isUpcoming) {
-     return res.status(400).json(new ApiError(400, "Cannot delete event with confirmed bookings"));
-  }
-
   const userId = (req as any).user?._id;
   if (!userId) {
     throw new ApiError(401, "Unauthorized: User not found");
   }
 
+  const event = await Event.findById(eventId);
 
   if (!event) {
     throw new ApiError(404, "Event not found");
@@ -314,11 +327,28 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(403, "Forbidden: You are not the host of this event");
   }
 
+  const bookingCount = await EventBooking.countDocuments({
+    eventId: eventId,
+  });
+  //  @ts-ignore
+  const isUpcoming = new Date(event?.date) > new Date();
+
+  if (bookingCount > 0 && isUpcoming) {
+    return res
+      .status(400)
+      .json(new ApiError(400, "Cannot delete event with confirmed bookings"));
+  }
+
+  if (!isUpcoming && bookingCount > 0) {
+    event.status = "canceled";
+    await event.save();
+  }
+
   if (event.coverImage) {
     try {
       await deleteFromCloudinary(event.coverImage);
     } catch (err) {
-      throw new ApiError(400, "Failed to delete cover image from cloudinary");
+      console.error("Error deleting cover image from cloudinary:", err);
     }
   }
 
@@ -329,20 +359,22 @@ const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, "Event deleted successfully", { eventId }));
 });
 
-const getHostEventById = asyncHandler(async(req: Request, res: Response) => {
-  const {eventId} = req.params;
+const getHostEventById = asyncHandler(async (req: Request, res: Response) => {
+  const { eventId } = req.params;
 
-  if(!eventId){
+  if (!eventId) {
     throw new ApiError(400, "Event id is a required field");
   }
 
   const event = await Event.findById(eventId);
-  console.log(event)
-  if(!event){
-     throw new ApiError(404, "Event not found");
+  console.log(event);
+  if (!event) {
+    throw new ApiError(404, "Event not found");
   }
 
-  return res.status(200).json(new ApiResponse(200, "Event found successfully", event));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Event found successfully", event));
 });
 
 export { createEvent, updateEvent, deleteEvent, getHostEventById };

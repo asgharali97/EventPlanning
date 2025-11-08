@@ -5,6 +5,19 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose from 'mongoose';
 
+const updatePastEvents = async () => {
+  const now = new Date();
+  await Event.updateMany(
+    {
+      status: "active",
+      date: { $lt: now }
+    },
+    {
+      $set: { status: "past" }
+    }
+  );
+};
+
 interface EventQueryParams {
   type?: "all" | "physical" | "online";
   search?: string;
@@ -16,6 +29,8 @@ interface EventQueryParams {
 }
 
 const getEventByHostId = asyncHandler(async (req: Request, res: Response) => {
+  await updatePastEvents();
+  
   const hostId = (req as any).user?._id;
   if (!hostId) {
     throw new ApiError(400, "UnAuthorized: User not found");
@@ -37,7 +52,8 @@ const getEventByHostId = asyncHandler(async (req: Request, res: Response) => {
   const skip = (pageNum - 1) * limitNum;
 
   const match: any = {
-      hostId: new mongoose.Types.ObjectId(hostId)
+      hostId: new mongoose.Types.ObjectId(hostId),
+      status: { $ne: "canceled" }
   };
 
   if (category) match.category = { $in: category.split(",") };
@@ -110,6 +126,8 @@ const getEventByHostId = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
+  await updatePastEvents();
+  
   const { eventId } = req.params;
   const event = await Event.findById(eventId).populate(
     "hostId",
@@ -128,6 +146,8 @@ const MAX_PAGE_SIZE = 50;
 
 const getAllEventsEnhanced = asyncHandler(
   async (req: Request, res: Response) => {
+    const statusEvent = await updatePastEvents();
+    console.log(statusEvent)
     const {
       q,
       category,
@@ -146,7 +166,9 @@ const getAllEventsEnhanced = asyncHandler(
       Math.max(1, parseInt(limit || "12", 10))
     );
     const skip = (pageNum - 1) * limitNum;
-    const match: any = {};
+    const match: any = {
+      status: { $ne: "canceled" }
+    };
 
     if (category) match.category = { $in: category.split(",") };
     if (eventType) match.eventType = { $in: eventType.split(",") };

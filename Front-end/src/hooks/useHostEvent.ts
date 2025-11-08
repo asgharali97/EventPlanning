@@ -22,6 +22,7 @@ interface Event {
   onlineDetails?: OnlineDetails;
   tags?: string[];
   rating?: number;
+  status?: "active" | "past" | "canceled";
 }
 
 const useHostDeleteEvent = () => {

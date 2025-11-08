@@ -38,6 +38,7 @@ interface BookedEvent {
     price: number;
     seats: number;
     eventType: string;
+    status?: "active" | "past" | "canceled";
   };
 }
 
@@ -160,39 +161,58 @@ const AllBookedEvents: React.FC = () => {
             const bookedEvent = event[0];
             const booking = event[1];
             const isPaid = booking.paymentStatus === "paid";
+            const isCanceled = bookedEvent.status === "canceled";
+            const isPast = bookedEvent.status === "past";
             return (
               <article
                 key={bookedEvent._id}
-                className="group cursor-pointer transitio border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular rounded-2xl overflow-hidden"
+                className={`group cursor-pointer transitio border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular rounded-2xl overflow-hidden ${
+                  isCanceled ? "opacity-75" : ""
+                }`}
                 onClick={() => handleEventClick(bookedEvent._id)}
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
                     src={bookedEvent.coverImage}
                     alt={bookedEvent.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                      isCanceled || isPast ? "grayscale" : ""
+                    }`}
                     loading="lazy"
                   />
-                  <div className="absolute top-3 right-3">
-                    {isPaid ? (
+                  <div className="absolute top-3 right-3 flex flex-col gap-2">
+                    {isCanceled && (
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Canceled
+                      </span>
+                    )}
+                    {isPaid && !isCanceled ? (
                       <span className="bg-[var(--foreground)] text-[var(--popover)] px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
                         <CheckCircle className="w-3.5 h-3.5" />
                         Paid
                       </span>
-                    ) : (
+                    ) : !isCanceled ? (
                       <span className="bg-[var(--primary)] text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 satoshi-medium">
                         <AlertCircle className="w-3.5 h-3.5" />
                         Pending
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]">
+                    <h3 className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)] ${
+                      isCanceled ? "line-through text-[var(--muted-foreground)]" : ""
+                    }`}>
                       {bookedEvent.title}
                     </h3>
+                    {isCanceled && (
+                      <p className="text-sm text-red-500 satoshi-medium">
+                        This event has been canceled and is no longer available.
+                      </p>
+                    )}
                     <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
                       {bookedEvent.description}
                     </p>

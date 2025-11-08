@@ -28,6 +28,7 @@ interface IEvent extends Document {
   eventType: "physical" | "online";
   onlineDetails?: IOnlineDetails;
   tags?: string[];
+  status: "active" | "past" | "canceled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -96,6 +97,11 @@ const evetnSchema = new Schema<IEvent>(
       },
     },
     tags: [{ type: String }],
+    status: {
+      type: String,
+      enum: ["active", "past", "canceled"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );
