@@ -40,4 +40,4 @@ const verifyHostPaymentwebhook = asyncHandler(
   }
 );
 
-export { refundHostDeposit, verifyHostPaymentwebhook };
+export { verifyHostPaymentwebhook };
