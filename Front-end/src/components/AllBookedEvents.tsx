@@ -103,7 +103,7 @@ const AllBookedEvents: React.FC = () => {
       },
       hover: {
         x: -40,
-        opacity:0,
+        opacity: 0,
       },
     };
     const MotionButton = motion(Button);
@@ -131,8 +131,7 @@ const AllBookedEvents: React.FC = () => {
           className="mt-6 satoshi-medium shadow-sm cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
           onClick={() => navigate("/events")}
         >
-          <MotionArrowLeft className="w-4 h-4 mr-2" variants={childVariant} 
-          />
+          <MotionArrowLeft className="w-4 h-4 mr-2" variants={childVariant} />
           Book Events
         </MotionButton>
       </div>
@@ -203,9 +202,13 @@ const AllBookedEvents: React.FC = () => {
 
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">
-                    <h3 className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)] ${
-                      isCanceled ? "line-through text-[var(--muted-foreground)]" : ""
-                    }`}>
+                    <h3
+                      className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)] ${
+                        isCanceled
+                          ? "line-through text-[var(--muted-foreground)]"
+                          : ""
+                      }`}
+                    >
                       {bookedEvent.title}
                     </h3>
                     {isCanceled && (
@@ -214,10 +217,11 @@ const AllBookedEvents: React.FC = () => {
                       </p>
                     )}
                     <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                    <div
+                      <div
                         dangerouslySetInnerHTML={{
                           __html:
-                            bookedEvent.description || "No description available",
+                            bookedEvent.description ||
+                            "No description available",
                         }}
                       />
                     </p>
