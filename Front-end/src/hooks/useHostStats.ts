@@ -30,7 +30,6 @@ export const useHostStats = () => {
 
        return res as HostStats
      } catch (error) {
-      console.log('useHostStats error', error)
       throw new Error('HostStats error ')
      }
     }

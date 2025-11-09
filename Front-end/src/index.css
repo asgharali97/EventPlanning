@@ -1,6 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
@@ -204,25 +204,25 @@
 }
 
 .satoshi-mdedium {
-  font-family: "satoshi-mdedium", sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 .satoshi-regular {
-  font-family: "satoshi-regular", sans-serif;
+   font-family: "Roboto", sans-serif;
 }
 
 .satoshi-bold {
-  font-family: "satoshi-bold", sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: bold;
 }
 
 .clash-mdedium {
-  font-family: "clash-mdedium", sans-serif;
+  font-family: "Lato", sans-serif;
 }
 
 .clash-bold {
-  font-family: "clash-bold", sans-serif;
-  font-weight: bold;
+  font-family: "Lato", sans-serif;
+  font-weight: 800;
 }
 
 .popup::-webkit-scrollbar {

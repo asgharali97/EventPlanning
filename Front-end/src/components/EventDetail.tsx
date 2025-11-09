@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUserById } from "@/hooks/useUser";
 import BookEvent from "./BookEvent";
 import {
-  Tooltip, 
+  Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
@@ -23,7 +23,7 @@ const EventDetail = () => {
   const { data: event, isLoading, error } = useEventById(eventId);
   const { isBookingDialogOpen, setBookingDialog } = useUIStore();
   const [selectedEvent, setSelectedEvent] = useState(null);
-  console.log(event)
+  console.log(event);
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -68,7 +68,7 @@ const EventDetail = () => {
         </Alert>
         <Button
           className="mt-6 satoshi-medium shadow-sm hover:shadow-[var(--shadow-m)] cursor-pointer text-[var(--popover)] bg-[var(--foreground)] hover:bg-[var(--muted-foreground)] hover:text-[var(--primary-foreground)]"
-          onClick={ () => navigate("/events")}
+          onClick={() => navigate("/events")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -77,11 +77,13 @@ const EventDetail = () => {
     );
   }
   const formatedTime = (time: string) => {
-      const [hours, minutes, seconds] = time?.split(':').map(Number);
-      const hour12 = hours % 12;
-      const amPm = hours < 12 ? 'am' : 'pm';
-      return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${amPm}`;
-    }
+    const [hours, minutes, seconds] = time?.split(":").map(Number);
+    const hour12 = hours % 12;
+    const amPm = hours < 12 ? "am" : "pm";
+    return `${hour12.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")} ${amPm}`;
+  };
   const handleBookClick = (event) => {
     setSelectedEvent(event);
     setBookingDialog(true);
@@ -104,8 +106,18 @@ const EventDetail = () => {
             <Button
               className="cursor-pointer shadow-[var(--shadow-m)] w-full sm:w-auto satoshi-medium"
               onClick={() => handleBookClick(event)}
+              disabled={
+                event.status === "past" ||
+                event.status === "canceled" ||
+                (!event.status && new Date(event.date) < new Date())
+              }
             >
-              Book Now
+              {event.status === "past" ||
+              (!event.status && new Date(event.date) < new Date())
+                ? "Past Event"
+                : event.status === "canceled"
+                ? "Canceled"
+                : "Book Now"}
             </Button>
           </div>
 
@@ -174,7 +186,14 @@ const EventDetail = () => {
                 <h4 className="text-lg sm:text-xl font-bold satoshi-bold">
                   Date
                 </h4>
-                <p className="text-[var(--secondary)] text-sm sm:text-base mt-2 satoshi-regular">
+                <p
+                  className={`text-[var(--secondary)] text-sm sm:text-base mt-2 satoshi-regular  ${
+                    event.status === "past" ||
+                    (!event.status && new Date(event.date) < new Date())
+                      ? "line-through text-[var(--muted-foreground)]"
+                      : ""
+                  }`}
+                >
                   {event.date.toString().split("T")[0]} at{" "}
                   {formatedTime(event.time)}
                 </p>
@@ -194,7 +213,12 @@ const EventDetail = () => {
               About This Event
             </h4>
             <p className="text-sm sm:text-base lg:text-lg text-[var(--secondary)] leading-relaxed satoshi-regular">
-              <div dangerouslySetInnerHTML={{__html: event.description || "<p>No description available.</p>"}} />
+              <div
+                dangerouslySetInnerHTML={{
+                  __html:
+                    event.description || "<p>No description available.</p>",
+                }}
+              />
             </p>
           </div>
           <div className="flex gap-2 flex-wrap border-b border-[var(--border)] -mx-4 sm:-mx-6 px-4 sm:px-8 py-4 sm:py-6">

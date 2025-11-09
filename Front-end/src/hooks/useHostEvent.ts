@@ -78,13 +78,6 @@ const useUpdateEvent = () => {
       eventId: string;
       formData: FormData;
     }) => {
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
-        } else {
-          console.log(`  ${key}:`, value);
-        }
-      }
 
       const response = await axios.patch(
         `/host/event/update-event/${eventId}`,

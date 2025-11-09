@@ -214,7 +214,12 @@ const AllBookedEvents: React.FC = () => {
                       </p>
                     )}
                     <p className="text-sm text-[var(--muted-foreground)] satoshi-regular line-clamp-2">
-                      {bookedEvent.description}
+                    <div
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            bookedEvent.description || "No description available",
+                        }}
+                      />
                     </p>
                   </div>
 

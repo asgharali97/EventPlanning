@@ -30,34 +30,30 @@ const getHostStats = asyncHandler(async (req, res) => {
       }),
     ]);
 
-    const totalRevenue = bookings.reduce(
-      //@ts-ignore
+  const totalRevenue = bookings.reduce(
+    //@ts-ignore
     (sum, booking) => sum + booking?.totalAmount,
     0
   );
   return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Host stats fetched successfully",
-       {
-        totalEvents,
-        totalBookings,
-        totalRevenue,
-        activeCoupons,
-      },
-    )
+    new ApiResponse(200, "Host stats fetched successfully", {
+      totalEvents,
+      totalBookings,
+      totalRevenue,
+      activeCoupons,
+    })
   );
 });
 
 const getRecentEvents = asyncHandler(async (req, res) => {
-  const hostId = (req as any).user?._id;;
-  if(!hostId){
-     throw new ApiError(401,"Unauthorized: User not found");
+  const hostId = (req as any).user?._id;
+  if (!hostId) {
+    throw new ApiError(401, "Unauthorized: User not found");
   }
   const limit = parseInt(req.query.limit as string) || 5;
 
-  const recentEvents = await Event.find({ hostId })
-    .sort({ createdAt: -1 }) 
+  const recentEvents = await Event.find({ hostId, status: { $ne: "canceled" } })
+    .sort({ createdAt: -1 })
     .limit(limit)
     .select(
       "title coverImage date time price seats category eventType location"
@@ -66,7 +62,7 @@ const getRecentEvents = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200,"Recent events fetched successfully", recentEvents)
+      new ApiResponse(200, "Recent events fetched successfully", recentEvents)
     );
 });
 export { getHostStats, getRecentEvents };

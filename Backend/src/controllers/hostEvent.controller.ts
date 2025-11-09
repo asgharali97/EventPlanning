@@ -30,8 +30,6 @@ const createEvent = asyncHandler(async (req: Request, res: Response) => {
       (req.files as any).coverImage &&
       (req.files as any).coverImage[0]?.path) ||
     undefined;
-  console.log(req.files);
-  console.log(req);
   if (!title || !price || !seats || !category || !date || !time || !eventType) {
     throw new ApiError(400, "All fields are required");
   }
@@ -367,7 +365,6 @@ const getHostEventById = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const event = await Event.findById(eventId);
-  console.log(event);
   if (!event) {
     throw new ApiError(404, "Event not found");
   }

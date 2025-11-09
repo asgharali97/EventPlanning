@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import SignIn from "./SignIn";
-import Container from "./Container";
+import { motion } from "motion/react";
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -80,10 +80,30 @@ const BookEvent: React.FC<BookingDialogProps> = ({
     onClose();
   };
   const isFormValid = ticketCount > 0;
-
+  const DailogElement = motion(Dialog);
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <DailogElement
+        initial={{
+          opacity: 0,
+          filter: "blur(10px)",
+        }}
+        animate={{
+          opacity: 1,
+          filter: "blur(0px)",
+        }}
+        transaction={{
+          duration: 0.3,
+          ease: "easeInOut",
+        }}
+        exit={{
+          opacity: 0,
+          filter: "blur(10px)",
+          scale: 0.96,
+        }}
+        open={isOpen}
+        onOpenChange={onClose}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto satoshi-regular p-0 w-xs sm:w-sm md:w-lg">
           <div className="relative h-48 w-full">
             <img
@@ -242,7 +262,7 @@ const BookEvent: React.FC<BookingDialogProps> = ({
             </div>
           </div>
         </DialogContent>
-      </Dialog>
+      </DailogElement>
       <GoogleOAuthProvider clientId={clientId}>
         <SignIn isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
       </GoogleOAuthProvider>

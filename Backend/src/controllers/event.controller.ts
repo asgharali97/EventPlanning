@@ -133,7 +133,6 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
     "hostId",
     "_id name email avatar isVerified"
   );
-  console.log("req come");
   if (!event) {
     throw new ApiError(404, "Event not found");
   }
@@ -147,7 +146,6 @@ const MAX_PAGE_SIZE = 50;
 const getAllEventsEnhanced = asyncHandler(
   async (req: Request, res: Response) => {
     const statusEvent = await updatePastEvents();
-    console.log(statusEvent)
     const {
       q,
       category,
@@ -180,7 +178,6 @@ const getAllEventsEnhanced = asyncHandler(
     }
 
     if (date) {
-      console.log(date);
       const now = new Date();
       const targetDate = new Date(date);
       match.date = { $gte: now, $lte: targetDate };

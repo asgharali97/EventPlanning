@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useEvents } from "../hooks/useEvent";
 import { useUIStore } from "@/store/uiStore";
+import { motion } from "motion/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -161,7 +162,7 @@ const Event: React.FC = () => {
               <SelectItem value="online">Online</SelectItem>
             </SelectContent>
           </Select>
-          {!isFilterOpen && 
+          {!isFilterOpen &&
           ( <Input
             placeholder="Search events..."
             className="w-full sm:w-48 satoshi-regular"
@@ -254,34 +255,19 @@ const Event: React.FC = () => {
           {events?.map((event) => (
             <article
               key={event._id}
-              className="group cursor-pointer transition-colors border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular  rounded-2xl"
+              className="group cursor-pointer transition-colors border border-[var(--border)] bg-[var(--card)] hover:shadow-[var(--shadow-m)] satoshi-regular rounded-2xl"
             >
               <section onClick={() => handleEventClick(event._id)}>
                 <div className="relative aspect-video overflow-hidden">
                   <img
                     src={event.coverImage}
                     alt={event.title}
-                    className={`w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105 ${
-                      event.status === "past" || (!event.status && new Date(event.date) < new Date())
-                        ? "opacity-60 grayscale" 
-                        : ""
-                    }`}
+                    className={`w-full h-full object-cover transition-transform duration-300 rounded-t-2xl group-hover:scale-105`}
                   />
-                  {(event.status === "past" || (!event.status && new Date(event.date) < new Date())) && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-t-2xl">
-                      <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium satoshi-medium">
-                        Past Event
-                      </span>
-                    </div>
-                  )}
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">
-                    <h3 className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)] ${
-                      event.status === "past" || (!event.status && new Date(event.date) < new Date()) 
-                        ? "line-through text-[var(--muted-foreground)]" 
-                        : ""
-                    }`}>
+                    <h3 className={`text-lg font-semibold satoshi-medium line-clamp-1 text-[var(--foreground)]`}>
                       {event.title}
                     </h3>
                     <div className="flex justify-between">
@@ -316,7 +302,11 @@ const Event: React.FC = () => {
                         <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
                           Date
                         </p>
-                        <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                        <p className={`text-sm satoshi-medium text-[var(--foreground)] truncate ${
+                      event.status === "past" || (!event.status && new Date(event.date) < new Date()) 
+                        ? "line-through text-[var(--muted-foreground)]" 
+                        : ""
+                    }`}>
                           {format(new Date(event.date), "MMM dd, yyyy")}
                         </p>
                       </div>
@@ -327,7 +317,11 @@ const Event: React.FC = () => {
                         <p className="text-xs text-[var(--muted-foreground)] satoshi-regular">
                           Time
                         </p>
-                        <p className="text-sm satoshi-medium text-[var(--foreground)] truncate">
+                        <p className={`text-sm satoshi-medium text-[var(--foreground)] truncate  ${
+                      event.status === "past" || (!event.status && new Date(event.date) < new Date()) 
+                        ? "line-through text-[var(--muted-foreground)]" 
+                        : ""
+                    }`}>
                           {formatedTime(event.time) || "00"}
                         </p>
                       </div>

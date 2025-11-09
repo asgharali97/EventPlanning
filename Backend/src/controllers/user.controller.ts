@@ -97,7 +97,6 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
     sameSite: "none",
     path: "/",
   };
-  console.log("user created", user);
   return res
     .status(200)
     .cookie("accessToken", accessToken, {
