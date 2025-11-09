@@ -17,7 +17,7 @@ EventSphere allows users to discover, book, and manage events, while verified ho
 * Stripe payments for bookings
 * Automatic ticket email
 * Bookings history page
-* Review booked event
+* Leave a review for booked events
 * Mobile‑friendly UI
 
 ### Host System

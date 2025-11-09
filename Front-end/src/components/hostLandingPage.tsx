@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Link } from "react-router-dom";
 import { Youtube, Twitter } from "lucide-react";
 import HostVerifyDialog from "./HostVerifactionDialog";
 import StripeProvider from "@/utils/stripe";
@@ -16,9 +15,7 @@ const hostLandingPage = () => {
             </h1>
             <p className="max-w-2xl text-center satoshi-regular text-md md:text-lg my-6">
               Verify your host profile with a small $1 check to keep our
-              community safe from scams and fake listings. You’ll get this
-              amount refunded after your first successful event with a positive
-              review.
+              community safe from scams and fake listings.
             </p>
             <Button
               onClick={() => setIsDialogOpen(!isDialogOpen)}
