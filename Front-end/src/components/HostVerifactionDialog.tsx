@@ -89,15 +89,6 @@ const HostVerifyDialog = ({ isOpen, onClose }) => {
           </div>
         </DialogHeader>
         <div className="space-y-5 mt-4">
-          <Alert className="border-[var(--foreground)]">
-            <AlertCircle className="h-5 w-5" />
-            <AlertTitle className="text-[var(--foreground)] text-sm font-medium statoshi-regular">
-              Refundable Verification
-            </AlertTitle>
-            <AlertDescription className="text-[var(--secondary)] text-xs leading-relaxed satoshi-regular">
-              This $1 verification fee will be fully refunded after your first successful event with a positive review.
-            </AlertDescription>
-          </Alert>
           <div className="space-y-4 mt-12">
             <label className="flex items-center gap-2 text-sm font-medium text-[var(--foreground)]">
               <CreditCard className="h-4 w-4" />
