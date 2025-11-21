@@ -48,6 +48,8 @@ interface FormErrors {
   [key: string]: string;
 }
 
+
+
 export default function CreateOrEditEvent() {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId: string }>();

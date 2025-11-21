@@ -47,7 +47,6 @@ const Event: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const debounceSearch = useDebounce(searchTerm, 1000);
-
   useEffect(() => {
     setEventFilter({ search: debounceSearch });
   }, [debounceSearch, setEventFilter]);
@@ -117,6 +116,7 @@ const Event: React.FC = () => {
     setSelectedEvent(event);
     setBookingDialog(true);
   };
+
   return (
     <>
       <div className="satoshi-medium">

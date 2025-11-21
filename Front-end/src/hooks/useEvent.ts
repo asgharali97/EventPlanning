@@ -35,6 +35,7 @@ interface Event {
   status?: "active" | "past" | "canceled";
 }
 
+
 interface FetchEventsParams {
   type?: "all" | "physical" | "online";
   search?: string;
