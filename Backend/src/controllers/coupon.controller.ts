@@ -4,7 +4,7 @@ import Coupon from "../models/coupon.model.js";
 import Event from "../models/event.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+// check
 const createCoupon = asyncHandler(async (req: Request, res: Response) => {
   const {
     code,
